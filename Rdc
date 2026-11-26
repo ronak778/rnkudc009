@@ -572,7 +572,7 @@ local hIcon = Instance.new("ImageLabel")
 hIcon.Size = UDim2.new(0, 36, 0, 36)
 hIcon.Position = UDim2.new(0, 8, 0.5, -18)
 hIcon.BackgroundTransparency = 1
-hIcon.Image = "rbxassetid://78841768689548" -- YOUR UPLOADED IMAGE ID HERE
+hIcon.Image = "rbxassetid://78841768689548"
 hIcon.ScaleType = Enum.ScaleType.Fit
 hIcon.Parent = header
 
@@ -1064,71 +1064,6 @@ targetLockToggle = addToggleRow(combatPage, "Enable Target Lock", function(enabl
     end
 end)
 
--- No Mercy Target Section
-local nmDivider = Instance.new("Frame")
-nmDivider.Size = UDim2.new(1, 0, 0, 1); nmDivider.BackgroundColor3 = COL.border; nmDivider.BackgroundTransparency = 0.5
-nmDivider.BorderSizePixel = 0; nmDivider.Parent = combatPage
-
-local nmSearchBox = Instance.new("TextBox")
-nmSearchBox.Size = UDim2.new(1, 0, 0, 36); nmSearchBox.BackgroundColor3 = COL.card; nmSearchBox.BackgroundTransparency = 0.05
-nmSearchBox.PlaceholderText = "Type @name for No Mercy"; nmSearchBox.Text = ""; nmSearchBox.TextColor3 = COL.text
-nmSearchBox.PlaceholderColor3 = COL.textDim; nmSearchBox.Font = Enum.Font.GothamMedium; nmSearchBox.TextSize = 13
-nmSearchBox.ClearTextOnFocus = false; nmSearchBox.Parent = combatPage
-Instance.new("UICorner", nmSearchBox).CornerRadius = UDim.new(0, 8)
-local nmS = Instance.new("UIStroke", nmSearchBox); nmS.Color = COL.border; nmS.Thickness = 1; nmS.Transparency = 0.5
-
-nmSearchBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local text = nmSearchBox.Text
-        if #text < 2 then notify("Error", "Name too short.", 2); return end
-        local found = smartFind(text)
-        if found then
-            noMercyTargetPlayer = found
-            noMercyTargetName = found.Name
-            nmSearchBox.Text = "@" .. found.Name
-            notify("No Mercy", "Target set to " .. found.Name, 2)
-            if noMercyTargetToggle then
-                noMercyTargetToggle.set(true)
-            end
-        else
-            notify("Not Found", "No player found.", 3)
-        end
-    end
-end)
-
-noMercyTargetToggle = addToggleRow(combatPage, "No Mercy Target", function(enabled)
-    if enabled and not keyVerified then
-        notify("Locked", "Enter key first", 3)
-        noMercyTargetToggle.set(false)
-        return
-    end
-    
-    if enabled then
-        if not noMercyTargetPlayer or not noMercyTargetPlayer.Parent then
-            notify("Error", "Type a valid name first!", 3)
-            noMercyTargetToggle.set(false)
-            return
-        end
-        -- Turn off Auto Victim
-        if autoVictim and autoVictimToggle then
-            autoVictimToggle.set(false)
-        end
-        noMercyTargetOn = true
-        ghostTarget = noMercyTargetPlayer
-        if not surpriseOn then
-            surpriseOn = true
-            startSurpriseLoop()
-        end
-    else
-        noMercyTargetOn = false
-        if not autoVictim then
-            surpriseOn = false
-            ghostTarget = nil
-            victimLocked = false
-        end
-    end
-end)
-
 -- ═══════════ MOVEMENT PAGE ═══════════
 local movePage = addPage("Movement")
 addToggleRow(movePage, "Fly V3", function(enabled) if enabled then startFlyV3() else stopFlyV3() end end)
@@ -1385,6 +1320,71 @@ rebuildChips = function()
 end
 rebuildChips()
 
+-- No Mercy Target Section (Moved to Bonus)
+local nmDivider = Instance.new("Frame")
+nmDivider.Size = UDim2.new(1, 0, 0, 1); nmDivider.BackgroundColor3 = COL.border; nmDivider.BackgroundTransparency = 0.5
+nmDivider.BorderSizePixel = 0; nmDivider.Parent = bonusPage
+
+local nmSearchBox = Instance.new("TextBox")
+nmSearchBox.Size = UDim2.new(1, 0, 0, 36); nmSearchBox.BackgroundColor3 = COL.card; nmSearchBox.BackgroundTransparency = 0.05
+nmSearchBox.PlaceholderText = "Type @name for No Mercy"; nmSearchBox.Text = ""; nmSearchBox.TextColor3 = COL.text
+nmSearchBox.PlaceholderColor3 = COL.textDim; nmSearchBox.Font = Enum.Font.GothamMedium; nmSearchBox.TextSize = 13
+nmSearchBox.ClearTextOnFocus = false; nmSearchBox.Parent = bonusPage
+Instance.new("UICorner", nmSearchBox).CornerRadius = UDim.new(0, 8)
+local nmS = Instance.new("UIStroke", nmSearchBox); nmS.Color = COL.border; nmS.Thickness = 1; nmS.Transparency = 0.5
+
+nmSearchBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local text = nmSearchBox.Text
+        if #text < 2 then notify("Error", "Name too short.", 2); return end
+        local found = smartFind(text)
+        if found then
+            noMercyTargetPlayer = found
+            noMercyTargetName = found.Name
+            nmSearchBox.Text = "@" .. found.Name
+            notify("No Mercy", "Target set to " .. found.Name, 2)
+            if noMercyTargetToggle then
+                noMercyTargetToggle.set(true)
+            end
+        else
+            notify("Not Found", "No player found.", 3)
+        end
+    end
+end)
+
+noMercyTargetToggle = addToggleRow(bonusPage, "No Mercy Target", function(enabled)
+    if enabled and not keyVerified then
+        notify("Locked", "Enter key first", 3)
+        noMercyTargetToggle.set(false)
+        return
+    end
+    
+    if enabled then
+        if not noMercyTargetPlayer or not noMercyTargetPlayer.Parent then
+            notify("Error", "Type a valid name first!", 3)
+            noMercyTargetToggle.set(false)
+            return
+        end
+        -- Turn off Auto Victim
+        if autoVictim and autoVictimToggle then
+            autoVictimToggle.set(false)
+        end
+        noMercyTargetOn = true
+        ghostTarget = noMercyTargetPlayer
+        if not surpriseOn then
+            surpriseOn = true
+            startSurpriseLoop()
+        end
+    else
+        noMercyTargetOn = false
+        if not autoVictim then
+            surpriseOn = false
+            ghostTarget = nil
+            victimLocked = false
+        end
+    end
+end)
+
 -- Friendly Fire toggle — only on this page; also mirrored on floating strip
 local ffToggle = addToggleRow(bonusPage, "Friendly Fire", function(enabled)
     friendlyFireEnabled = enabled
@@ -1580,7 +1580,6 @@ invisBtn.Activated:Connect(function()
 end)
 
 -- ═══════════ FLOATING BONUS STRIP ═══════════
--- Draggable, lives outside panel, holds FF + AV toggles
 local bonusStrip = Instance.new("Frame")
 bonusStrip.Name = "BonusStrip"
 bonusStrip.Size = UDim2.new(0, 170, 0, 118)
@@ -1595,7 +1594,6 @@ Instance.new("UICorner", bonusStrip).CornerRadius = UDim.new(0, 12)
 local bsStroke = Instance.new("UIStroke", bonusStrip)
 bsStroke.Color = COL.accent; bsStroke.Thickness = 1.5; bsStroke.Transparency = 0.1
 
--- strip header / drag handle
 local bsHeader = Instance.new("Frame")
 bsHeader.Size = UDim2.new(1, 0, 0, 28)
 bsHeader.BackgroundColor3 = COL.accentDark
@@ -1612,7 +1610,6 @@ bsHeaderLbl.BackgroundTransparency = 1; bsHeaderLbl.Text = "☠ BONUS"
 bsHeaderLbl.TextColor3 = COL.accentLight; bsHeaderLbl.Font = Enum.Font.GothamBold; bsHeaderLbl.TextSize = 12
 bsHeaderLbl.TextXAlignment = Enum.TextXAlignment.Left; bsHeaderLbl.ZIndex = 22; bsHeaderLbl.Parent = bsHeader
 
--- collapse/expand button
 local bsCollapse = Instance.new("TextButton")
 bsCollapse.Size = UDim2.new(0, 22, 0, 22); bsCollapse.Position = UDim2.new(1, -26, 0.5, -11)
 bsCollapse.BackgroundColor3 = Color3.fromRGB(80, 20, 20); bsCollapse.BackgroundTransparency = 0.1
@@ -1620,7 +1617,6 @@ bsCollapse.Text = "−"; bsCollapse.TextColor3 = COL.accentLight; bsCollapse.Fon
 bsCollapse.AutoButtonColor = false; bsCollapse.ZIndex = 22; bsCollapse.Parent = bsHeader
 Instance.new("UICorner", bsCollapse).CornerRadius = UDim.new(1, 0)
 
--- strip content
 local bsContent = Instance.new("Frame")
 bsContent.Size = UDim2.new(1, 0, 1, -28)
 bsContent.Position = UDim2.new(0, 0, 0, 28)
@@ -1633,7 +1629,6 @@ bsList.Padding = UDim.new(0, 6)
 local bsPad = Instance.new("UIPadding", bsContent)
 bsPad.PaddingTop = UDim.new(0, 8); bsPad.PaddingLeft = UDim.new(0, 8); bsPad.PaddingRight = UDim.new(0, 8)
 
--- mini toggle builder for the strip
 local function makeMiniToggle(parent, labelText, offColor, onColor, callback)
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 30)
@@ -1678,14 +1673,12 @@ end
 local OFF_COLOR = Color3.fromRGB(55, 20, 20)
 local ON_COLOR  = COL.accent
 
--- FF toggle on strip
 local ffStrip = makeMiniToggle(bsContent, "Friendly Fire", OFF_COLOR, ON_COLOR, function(enabled)
     friendlyFireEnabled = enabled
     if ffToggle then ffToggle.set(enabled) end
     notify("Friendly Fire", enabled and "ON" or "OFF", 2)
 end)
 
--- AV toggle on strip
 local avStrip = makeMiniToggle(bsContent, "Auto Victim", OFF_COLOR, ON_COLOR, function(enabled)
     if enabled and not keyVerified then
         avStrip.setOn(false, false)
@@ -1696,10 +1689,6 @@ end)
 avMiniSwitchBgRef = avStrip.swBg
 avMiniKnobRef     = avStrip.kn
 
--- sync ff bonus page → strip
-local _origFfToggleCb = ffToggle
-
--- collapse/expand strip
 local stripCollapsed = false
 local STRIP_FULL_H = 118
 local STRIP_COLLAPSED_H = 28
@@ -1712,7 +1701,6 @@ bsCollapse.MouseButton1Click:Connect(function()
     bsContent.Visible = not stripCollapsed
 end)
 
--- drag the bonus strip
 local BSDRAG = { active=false, start=nil, startPos=nil }
 bsHeader.InputBegan:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1763,7 +1751,6 @@ avPanelVictimLbl.TextColor3 = Color3.fromRGB(220,220,240); avPanelVictimLbl.Font
 avPanelVictimLbl.TextSize = 11; avPanelVictimLbl.TextXAlignment = Enum.TextXAlignment.Left
 avPanelVictimLbl.TextTruncate = Enum.TextTruncate.AtEnd; avPanelVictimLbl.ZIndex = 26; avPanelVictimLbl.Parent = avPanel
 
--- tap-to-off button strip inside avPanel
 local avOffBtn = Instance.new("TextButton")
 avOffBtn.Size = UDim2.new(1, -16, 0, 20); avOffBtn.Position = UDim2.new(0, 8, 0, 46)
 avOffBtn.BackgroundColor3 = Color3.fromRGB(80, 15, 15); avOffBtn.BackgroundTransparency = 0.1
@@ -1779,7 +1766,6 @@ avOffBtn.MouseButton1Click:Connect(function()
     playSound("rbxassetid://12221976"); notify("Auto Victim","OFF",2)
 end)
 
--- set the real updateAvPanelVictim now that UI is built
 updateAvPanelVictim = function(name)
     if avPanel.Visible then
         avPanelVictimLbl.Text = name and ("→ @" .. name) or "watching..."
@@ -1787,7 +1773,6 @@ updateAvPanelVictim = function(name)
     end
 end
 
--- drag av panel
 local AVDRAG = { active=false, start=nil, startPos=nil }
 avPanel.InputBegan:Connect(function(inp)
     if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
@@ -1931,14 +1916,13 @@ local function startSurpriseLoop()
     end)
 end
 
--- ═══════════ AUTO-VICTIM SYSTEM ═══════════
+-- ═══════════ NO MERCY & AUTO-VICTIM LOOP ═══════════
 RunService.Heartbeat:Connect(function()
-    -- Handle No Mercy Target First
-    if noMercyTargetOn then
+    if noMercyTargetOn and keyVerified then
         if noMercyTargetPlayer and noMercyTargetPlayer.Character then
             local tChar = noMercyTargetPlayer.Character
             local tHum = tChar:FindFirstChildOfClass("Humanoid")
-            if tHum and tHum.Health > 0 then
+            if tHum and tHum.Health > 0 and not isWhitelisted(noMercyTargetPlayer) then
                 if ghostTarget ~= noMercyTargetPlayer then
                     ghostTarget = noMercyTargetPlayer
                     victimLocked = true
@@ -1958,10 +1942,10 @@ RunService.Heartbeat:Connect(function()
             surpriseOn = false
             victimLocked = false
         end
-        return -- Skip auto victim logic while No Mercy is active
+        return
     end
 
-    -- Normal Auto Victim Logic
+    -- Normal Auto Victim tracking
     local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
     local now = tick()
@@ -1983,53 +1967,31 @@ end)
 local function resolveAttacker()
     local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return nil end
-    local myPos = myRoot.Position; local myLook = myRoot.CFrame.LookVector; local now = tick()
-    
-    -- Fix: If a whitelisted player (friend) is very close, do not target anyone else
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= lp and p.Character and isWhitelisted(p) then
-            local r = p.Character:FindFirstChild("HumanoidRootPart")
-            local h = p.Character:FindFirstChildOfClass("Humanoid")
-            if r and h and h.Health > 0 then
-                local d = (myPos - r.Position).Magnitude
-                if d <= AV.RECENT_NEAR_DIST then
-                    return nil -- Friend is attacking us, ignore retaliation
-                end
-            end
-        end
-    end
+    local myPos = myRoot.Position
+    local now = tick()
 
-    if ATK.last and (now - ATK.time) <= AV.ATTACKER_CACHE_TTL then
-        local ca = ATK.last
-        if ca and ca.Parent and ca.Character then
-            local r = ca.Character:FindFirstChild("HumanoidRootPart")
-            local h = ca.Character:FindFirstChildOfClass("Humanoid")
-            if r and h and h.Health > 0 and not isWhitelisted(ca) then return ca end
-        end
-    end
-    local bestRecent, bestRecentDist = nil, AV.NEAR_RADIUS
-    local bestFront,  bestFrontDist  = nil, AV.NEAR_RADIUS
-    local bestAny,    bestAnyDist    = nil, AV.NEAR_RADIUS
+    local closestEnemy = nil
+    local closestDist = 35 -- Strict hit range limit
+
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= lp and p.Character and not isWhitelisted(p) then
+        if p ~= lp and p.Character then
             local r = p.Character:FindFirstChild("HumanoidRootPart")
             local h = p.Character:FindFirstChildOfClass("Humanoid")
             if r and h and h.Health > 0 then
                 local d = (myPos - r.Position).Magnitude
-                if d < bestAnyDist then bestAny = p; bestAnyDist = d end
-                local seeAt = proximityHistory[p]
-                if seeAt and (now - seeAt) <= AV.RECENT_NEAR_WINDOW and d < bestRecentDist then
-                    bestRecent = p; bestRecentDist = d
-                end
-                local dirTo = (r.Position - myPos)
-                if dirTo.Magnitude > 0.01 then
-                    local dot = myLook:Dot(dirTo.Unit)
-                    if dot > 0.5 and d < bestFrontDist then bestFront = p; bestFrontDist = d end
+                if d <= closestDist then
+                    if isWhitelisted(p) then
+                        -- If friend is very close hitting us, cancel retaliation and act normal
+                        return nil
+                    else
+                        closestEnemy = p
+                        closestDist = d
+                    end
                 end
             end
         end
     end
-    return bestRecent or bestFront or bestAny
+    return closestEnemy
 end
 
 local function lockAttacker(attacker)
@@ -2039,18 +2001,16 @@ local function lockAttacker(attacker)
 end
 
 RunService.Heartbeat:Connect(function()
-    if not autoVictim or not keyVerified then
+    if not autoVictim or not keyVerified or noMercyTargetOn then
         if lp.Character then local h = lp.Character:FindFirstChildOfClass("Humanoid")
             if h then lastHealth = h.Health end end; return
     end
-    if noMercyTargetOn then return end -- If No Mercy is ON, Auto Victim logic is bypassed
     
     local myChar = lp.Character; local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
     if not myHum then return end
     local cur = myHum.Health; local drop = lastHealth - cur
     if drop >= AV.MIN_DAMAGE then
         local hpPct = cur / math.max(myHum.MaxHealth, 1)
-        if hpPct < AV.DEFENSIVE_HP_GATE then maintainGodMode(true) end
         local lockedValid = false
         if victimLocked and ghostTarget and ghostTarget.Character and not isWhitelisted(ghostTarget) then
             local r = ghostTarget.Character:FindFirstChild("HumanoidRootPart")
@@ -2059,7 +2019,15 @@ RunService.Heartbeat:Connect(function()
         end
         if not lockedValid then
             local attacker = resolveAttacker()
-            if attacker then lockAttacker(attacker) else maintainGodMode(true) end
+            if attacker then 
+                lockAttacker(attacker) 
+            else
+                -- Friend hit us, or no one close. Act completely normal, stop attacking.
+                surpriseOn = false
+                ghostTarget = nil
+                victimLocked = false
+                updateAvPanelVictim(nil)
+            end
         end
     end
     lastHealth = cur
