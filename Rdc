@@ -574,6 +574,79 @@ hIcon.Position = UDim2.new(0, 8, 0.5, -18)
 hIcon.BackgroundTransparency = 1
 hIcon.Image = "rbxassetid://78841768689548"
 hIcon.ScaleType = Enum.ScaleType.Fit
+-- ═══════════ UI SETUP — RED THEME ═══════════
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UndocallsHubV7"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+pcall(function() ScreenGui.Parent = gethui() end)
+if not ScreenGui.Parent then ScreenGui.Parent = lp:WaitForChild("PlayerGui") end
+
+-- RED COLOR PALETTE
+local COL = {
+    bg          = Color3.fromRGB(20, 10, 10),
+    card        = Color3.fromRGB(45, 20, 20),
+    accent      = Color3.fromRGB(200, 30, 30),
+    accentLight = Color3.fromRGB(255, 90, 90),
+    accentDark  = Color3.fromRGB(140, 15, 15),
+    text        = Color3.fromRGB(255, 240, 240),
+    textDim     = Color3.fromRGB(200, 170, 170),
+    border      = Color3.fromRGB(120, 50, 50),
+    btnBg       = Color3.fromRGB(60, 20, 20),
+    sidebar     = Color3.fromRGB(28, 12, 12),
+    sidebarItem = Color3.fromRGB(55, 22, 22),
+    red         = Color3.fromRGB(255, 75, 75),
+    green       = Color3.fromRGB(75, 255, 120),
+    glow        = Color3.fromRGB(220, 50, 50),
+}
+
+-- ── CANVAS GROUP (fades whole panel as one layer) ──
+local canvas = Instance.new("CanvasGroup")
+canvas.Name = "HubCanvas"
+canvas.Size = UDim2.new(0, 490, 0, 395)
+canvas.Position = UDim2.new(0.5, -245, 0.5, -197)
+canvas.BackgroundTransparency = 1
+canvas.GroupTransparency = 0
+canvas.BorderSizePixel = 0
+canvas.Parent = ScreenGui
+
+-- ── MAIN PANEL ──
+local mainPanel = Instance.new("Frame")
+mainPanel.Size = UDim2.new(1, 0, 1, 0)
+mainPanel.Position = UDim2.new(0, 0, 0, 0)
+mainPanel.BackgroundColor3 = COL.bg
+mainPanel.BackgroundTransparency = 0.1
+mainPanel.BorderSizePixel = 0
+mainPanel.ClipsDescendants = true
+mainPanel.Active = true
+mainPanel.Parent = canvas
+Instance.new("UICorner", mainPanel).CornerRadius = UDim.new(0, 14)
+local mpS = Instance.new("UIStroke", mainPanel)
+mpS.Color = COL.accent; mpS.Thickness = 2; mpS.Transparency = 0.1
+
+-- ── HEADER ──
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 52)
+header.BackgroundColor3 = COL.sidebar
+header.BackgroundTransparency = 0.05
+header.BorderSizePixel = 0
+header.Active = true
+header.Parent = mainPanel
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 14)
+
+local hAccent = Instance.new("Frame")
+hAccent.Size = UDim2.new(1, 0, 0, 2)
+hAccent.Position = UDim2.new(0, 0, 1, -2)
+hAccent.BackgroundColor3 = COL.accent
+hAccent.BorderSizePixel = 0
+hAccent.Parent = header
+
+local hIcon = Instance.new("ImageLabel")
+hIcon.Size = UDim2.new(0, 36, 0, 36)
+hIcon.Position = UDim2.new(0, 8, 0.5, -18)
+hIcon.BackgroundTransparency = 1
+hIcon.Image = "rbxassetid://78841768689548"
+hIcon.ScaleType = Enum.ScaleType.Fit
 hIcon.Parent = header
 
 local hTitle = Instance.new("TextLabel")
@@ -598,7 +671,6 @@ hVersion.TextSize = 10
 hVersion.TextXAlignment = Enum.TextXAlignment.Left
 hVersion.Parent = header
 
--- minimize button
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0, 28, 0, 28)
 minimizeBtn.Position = UDim2.new(1, -68, 0.5, -14)
@@ -625,54 +697,61 @@ closeBtn.AutoButtonColor = false
 closeBtn.Parent = header
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
--- reopen ghost button (fully transparent when panel closed)
+-- ── REOPEN LOGO BUTTON (custom image, no skull text) ──
 local reopenBtn = Instance.new("TextButton")
 reopenBtn.Size = UDim2.new(0, 44, 0, 44)
 reopenBtn.Position = UDim2.new(0.5, -22, 0.5, -22)
 reopenBtn.BackgroundColor3 = COL.accent
-reopenBtn.BackgroundTransparency = 0.7
-reopenBtn.Text = "☠"
-reopenBtn.TextColor3 = COL.accentLight
-reopenBtn.TextTransparency = 0.3
-reopenBtn.Font = Enum.Font.Gotham
-reopenBtn.TextSize = 20
+reopenBtn.BackgroundTransparency = 0.75
+reopenBtn.Text = ""
 reopenBtn.AutoButtonColor = false
 reopenBtn.Visible = false
 reopenBtn.Parent = ScreenGui
 Instance.new("UICorner", reopenBtn).CornerRadius = UDim.new(1, 0)
+
 local reoStroke = Instance.new("UIStroke", reopenBtn)
-reoStroke.Color = COL.accent; reoStroke.Thickness = 1.5; reoStroke.Transparency = 0.4
+reoStroke.Color = COL.accent
+reoStroke.Thickness = 1.5
+reoStroke.Transparency = 0.4
+
+local reopenLogo = Instance.new("ImageLabel")
+reopenLogo.Size = UDim2.new(0, 32, 0, 32)
+reopenLogo.Position = UDim2.new(0.5, -16, 0.5, -16)
+reopenLogo.BackgroundTransparency = 1
+reopenLogo.Image = "rbxassetid://78841768689548"
+reopenLogo.ScaleType = Enum.ScaleType.Fit
+reopenLogo.Parent = reopenBtn
 
 local panelMinimized = false
+local closing = false
 
 local function syncReopenPos()
-    local px, psz, rsz = mainPanel.Position, mainPanel.Size, reopenBtn.Size
+    local px = canvas.Position
+    local psz = canvas.Size
+    local rsz = reopenBtn.Size
     reopenBtn.Position = UDim2.new(px.X.Scale, px.X.Offset + (psz.X.Offset - rsz.X.Offset)/2,
-                                   px.Y.Scale,  px.Y.Offset + (psz.Y.Offset - rsz.Y.Offset)/2)
+                                   px.Y.Scale, px.Y.Offset + (psz.Y.Offset - rsz.Y.Offset)/2)
 end
 
--- transparent fade-out close
 local function closePanel()
-    local targets = { mainPanel, header }
-    for _, f in ipairs(targets) do
-        TweenService:Create(f, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-    end
-    TweenService:Create(mpS, TweenInfo.new(0.25), {Transparency = 1}):Play()
-    task.delay(0.27, function()
-        mainPanel.Visible = false
-        mainPanel.BackgroundTransparency = 0.1
-        header.BackgroundTransparency = 0.05
-        mpS.Transparency = 0.1
+    if closing then return end
+    closing = true
+    local tween = TweenService:Create(canvas, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {GroupTransparency = 1})
+    tween:Play()
+    tween.Completed:Connect(function()
+        canvas.Visible = false
+        canvas.GroupTransparency = 0
         syncReopenPos()
         reopenBtn.Visible = true
+        closing = false
     end)
 end
 
 local function openPanel()
     reopenBtn.Visible = false
-    mainPanel.BackgroundTransparency = 1
-    mainPanel.Visible = true
-    TweenService:Create(mainPanel, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
+    canvas.Visible = true
+    canvas.GroupTransparency = 1
+    TweenService:Create(canvas, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
     panelMinimized = false
 end
 
