@@ -959,12 +959,19 @@ keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
 keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15) -- Dark green
 keyActivatedFrame.BackgroundTransparency = 0.1
 keyActivatedFrame.BorderSizePixel = 0
+
+-- ═══════════ KEY SYSTEM UI ═══════════
+local keyActivatedFrame = Instance.new("Frame")
+keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
+keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15)
+keyActivatedFrame.BackgroundTransparency = 0.1
+keyActivatedFrame.BorderSizePixel = 0
 keyActivatedFrame.Visible = keyVerified
 keyActivatedFrame.Parent = keyPage
-Instance.new("UICorner", keyActivatedFrame).CornerRadius = UDim.new(1, 0) -- Pill shape
+Instance.new("UICorner", keyActivatedFrame).CornerRadius = UDim.new(1, 0)
 
 local kac = Instance.new("UIStroke", keyActivatedFrame)
-kac.Color = Color3.fromRGB(60, 255, 100) -- Bright green stroke
+kac.Color = Color3.fromRGB(60, 255, 100)
 kac.Thickness = 1.5
 kac.Transparency = 0
 
@@ -999,14 +1006,18 @@ keyActivatedText.Parent = keyActivatedFrame
 local function submitKey()
     if checkKey(keyInput.Text) then
         keyVerified = true; pcall(function() writefile(KEY_FILE, keyInput.Text) end)
-        keyInput.Visible = false; getKeyBtn.Visible = false; enterKeyBtn.Visible = false; keyActivatedL.Visible = true
+        keyInput.Visible = false; getKeyBtn.Visible = false; enterKeyBtn.Visible = false; keyActivatedFrame.Visible = true
         playSound("rbxassetid://12221976"); notify("✓ Unlocked", "All OP features active!", 3)
     else
         keyInput.Text = ""; playSound("rbxassetid://12221976"); notify("Invalid Key", "Get key from Discord", 3)
     end
 end
 
-getKeyBtn.MouseButton1Click:Connect(function() pcall(function() setclipboard(KEY_LINK) end); playSound("rbxassetid://12221976"); notify("Discord", "Link copied to clipboard!", 3) end)
+getKeyBtn.MouseButton1Click:Connect(function() 
+    pcall(function() setclipboard(KEY_LINK) end)
+    playSound("rbxassetid://12221976")
+    notify("Discord", "Link copied to clipboard!", 3) 
+end)
 enterKeyBtn.MouseButton1Click:Connect(submitKey)
 keyInput.FocusLost:Connect(function(e) if e then submitKey() end end)
 
