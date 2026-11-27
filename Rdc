@@ -652,7 +652,7 @@ local reopenLogo = Instance.new("ImageLabel")
 reopenLogo.Size = UDim2.new(0, 32, 0, 32)
 reopenLogo.Position = UDim2.new(0.5, -16, 0.5, -16)
 reopenLogo.BackgroundTransparency = 1
-reopenLogo.Image = "rbxassetid://74028505342590"
+reopenLogo.Image = "rbxassetid://78841768689548"
 reopenLogo.ScaleType = Enum.ScaleType.Fit
 reopenLogo.Parent = reopenBtn
 
@@ -709,7 +709,6 @@ sbL.Padding = UDim.new(0, 5)
 local sbP = Instance.new("UIPadding", sidebar)
 sbP.PaddingTop = UDim.new(0, 10); sbP.PaddingLeft = UDim.new(0, 6); sbP.PaddingRight = UDim.new(0, 6)
 
--- sidebar right divider
 local sDiv = Instance.new("Frame")
 sDiv.Size = UDim2.new(0, 1, 1, -52)
 sDiv.Position = UDim2.new(0, 112, 0, 52)
@@ -954,69 +953,6 @@ enterKeyBtn.Visible = not keyVerified; enterKeyBtn.Parent = keyPage
 Instance.new("UICorner", enterKeyBtn).CornerRadius = UDim.new(0, 8)
 local ekS = Instance.new("UIStroke", enterKeyBtn); ekS.Color = COL.accentLight; ekS.Thickness = 1; ekS.Transparency = 0.4
 
-local keyActivatedFrame = Instance.new("Frame")
-keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
-keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15) -- Dark green
-keyActivatedFrame.BackgroundTransparency = 0.1
-keyActivatedFrame.BorderSizePixel = 0
-
--- ═══════════ KEY SYSTEM UI ═══════════
-local keyActivatedFrame = Instance.new("Frame")
-keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
-keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15)
-keyActivatedFrame.BackgroundTransparency = 0.1
-keyActivatedFrame.BorderSizePixel = 0
-keyActivatedFrame.Visible = keyVerified
-keyActivatedFrame.Parent = keyPage
-Instance.new("UICorner", keyActivatedFrame).CornerRadius = UDim.new(1, 0)
-
-local kac = Instance.new("UIStroke", keyActivatedFrame)
-kac.Color = Color3.fromRGB(60, 255, 100)
-kac.Thickness = 1.5
-kac.Transparency = 0
-
-local iconBg = Instance.new("Frame")
-iconBg.Size = UDim2.new(0, 24, 0, 24)
-iconBg.Position = UDim2.new(0, 10, 0.5, -12)
-iconBg.BackgroundColor3 = Color3.fromRGB(60, 255, 100)
-iconBg.BorderSizePixel = 0
-iconBg.Parent = keyActivatedFrame
-Instance.new("UICorner", iconBg).CornerRadius = UDim.new(1, 0)
-
-local checkLbl = Instance.new("TextLabel")
-checkLbl.Size = UDim2.new(1, 0, 1, 0)
-checkLbl.BackgroundTransparency = 1
-checkLbl.Text = "✓"
-checkLbl.TextColor3 = Color3.fromRGB(10, 35, 15)
-
--- ═══════════ KEY PAGE ═══════════
-local keyPage = addPage("Key")
-
-local keyInput = Instance.new("TextBox")
-keyInput.Size = UDim2.new(1, 0, 0, 40); keyInput.BackgroundColor3 = COL.card; keyInput.BackgroundTransparency = 0.05
-keyInput.PlaceholderText = "Enter key..."; keyInput.Text = ""; keyInput.TextColor3 = COL.text
-keyInput.Font = Enum.Font.GothamMedium; keyInput.TextSize = 13; keyInput.ClearTextOnFocus = false
-keyInput.Visible = not keyVerified; keyInput.Parent = keyPage
-Instance.new("UICorner", keyInput).CornerRadius = UDim.new(0, 8)
-local kiS = Instance.new("UIStroke", keyInput); kiS.Color = COL.border; kiS.Thickness = 1; kiS.Transparency = 0.5
-
-local getKeyBtn = Instance.new("TextButton")
-getKeyBtn.Size = UDim2.new(1, 0, 0, 36); getKeyBtn.BackgroundColor3 = COL.btnBg; getKeyBtn.BackgroundTransparency = 0.05
-getKeyBtn.Text = "Get Key  ➜ Discord"; getKeyBtn.TextColor3 = Color3.fromRGB(114, 160, 255)
-getKeyBtn.Font = Enum.Font.GothamBold; getKeyBtn.TextSize = 13; getKeyBtn.AutoButtonColor = false
-getKeyBtn.Visible = not keyVerified; getKeyBtn.Parent = keyPage
-Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 8)
-local gkS = Instance.new("UIStroke", getKeyBtn); gkS.Color = COL.border; gkS.Thickness = 1; gkS.Transparency = 0.5
-
-local enterKeyBtn = Instance.new("TextButton")
-enterKeyBtn.Size = UDim2.new(1, 0, 0, 36); enterKeyBtn.BackgroundColor3 = COL.accentDark; enterKeyBtn.BackgroundTransparency = 0.05
-enterKeyBtn.Text = "✓  Activate Key"; enterKeyBtn.TextColor3 = COL.text
-enterKeyBtn.Font = Enum.Font.GothamBold; enterKeyBtn.TextSize = 13; enterKeyBtn.AutoButtonColor = false
-enterKeyBtn.Visible = not keyVerified; enterKeyBtn.Parent = keyPage
-Instance.new("UICorner", enterKeyBtn).CornerRadius = UDim.new(0, 8)
-local ekS = Instance.new("UIStroke", enterKeyBtn); ekS.Color = COL.accentLight; ekS.Thickness = 1; ekS.Transparency = 0.4
-
--- ── YOUR CUSTOM PILL BANNER ──
 local keyActivatedFrame = Instance.new("Frame")
 keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
 keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15)
@@ -1487,8 +1423,7 @@ noMercyTargetToggle = addToggleRow(bonusPage, "No Mercy Target", function(enable
             autoVictimToggle.set(false)
         end
         noMercyTargetOn = true
-        -- do NOT touch ghostTarget / surpriseOn here.
-        -- the heartbeat loop will set them and start the surprise loop safely.
+        -- The heartbeat loop will safely handle starting the surprise loop
     else
         noMercyTargetOn = false
         if not autoVictim then
@@ -2085,7 +2020,7 @@ local function resolveAttacker()
     local now = tick()
 
     local closestEnemy = nil
-    local closestDist = 35 -- Strict hit range limit
+    local closestDist = 35
 
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= lp and p.Character then
@@ -2095,7 +2030,6 @@ local function resolveAttacker()
                 local d = (myPos - r.Position).Magnitude
                 if d <= closestDist then
                     if isWhitelisted(p) then
-                        -- If friend is very close hitting us, cancel retaliation and act normal
                         return nil
                     else
                         closestEnemy = p
@@ -2136,7 +2070,6 @@ RunService.Heartbeat:Connect(function()
             if attacker then 
                 lockAttacker(attacker) 
             else
-                -- Friend hit us, or no one close. Act completely normal, stop attacking.
                 surpriseOn = false
                 ghostTarget = nil
                 victimLocked = false
