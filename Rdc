@@ -1239,7 +1239,7 @@ addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics()
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
     pcall(function()
-        local code = game:HttpGet("https://raw.githubusercontent.com/Exunys/Anti-Kick/main/Anti-Kick.lua")
+        local code = game:HttpGet("")
         if code then
             local chunk = loadstring(code)
             if chunk then chunk() end
