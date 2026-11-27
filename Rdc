@@ -1,4 +1,4 @@
--- ═══════════ UNDOCALL'S HUB v7 — NO MERCY ═══════════
+-- ═══════════ UNDOCALL'S HUB v7 — No MERCY ═══════════
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -94,7 +94,7 @@ local function checkKey(input)
 end
 
 pcall(function()
-    if type(isfile) == "function" and isfile(KEY_FILE) then
+    if isfile and isfile(KEY_FILE) then
         local savedKey = readfile(KEY_FILE)
         if savedKey and checkKey(savedKey) then keyVerified = true end
     end
@@ -338,10 +338,10 @@ local function startFlyV3()
         local isR6 = (hum.RigType == Enum.HumanoidRigType.R6)
         local torso = isR6 and char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
         if not torso then FLY.active = false return end
-        local bg = Instance.new("BodyGyro", torso)
-        bg.P = 9e4; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.CFrame = torso.CFrame
-        local bv = Instance.new("BodyVelocity", torso)
-        bv.Velocity = Vector3.new(0, 0.1, 0); bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        local bg = Instance.new("BodyGyro")
+        bg.P = 9e4; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.CFrame = torso.CFrame; bg.Parent = torso
+        local bv = Instance.new("BodyVelocity")
+        bv.Velocity = Vector3.new(0, 0.1, 0); bv.MaxForce = Vector3.new(9e9, 9e9, 9e9); bv.Parent = torso
         hum.PlatformStand = true
         while FLY.active do
             RunService.RenderStepped:Wait()
@@ -518,6 +518,7 @@ ScreenGui.IgnoreGuiInset = true
 pcall(function() ScreenGui.Parent = gethui() end)
 if not ScreenGui.Parent then ScreenGui.Parent = lp:WaitForChild("PlayerGui") end
 
+-- RED COLOR PALETTE
 local COL = {
     bg          = Color3.fromRGB(20, 10, 10),
     card        = Color3.fromRGB(45, 20, 20),
@@ -535,6 +536,7 @@ local COL = {
     glow        = Color3.fromRGB(220, 50, 50),
 }
 
+-- ── CANVAS GROUP (fades whole panel as one layer) ──
 local canvas = Instance.new("CanvasGroup")
 canvas.Name = "HubCanvas"
 canvas.Size = UDim2.new(0, 490, 0, 395)
@@ -544,6 +546,7 @@ canvas.GroupTransparency = 0
 canvas.BorderSizePixel = 0
 canvas.Parent = ScreenGui
 
+-- ── MAIN PANEL ──
 local mainPanel = Instance.new("Frame")
 mainPanel.Size = UDim2.new(1, 0, 1, 0)
 mainPanel.Position = UDim2.new(0, 0, 0, 0)
@@ -557,6 +560,7 @@ Instance.new("UICorner", mainPanel).CornerRadius = UDim.new(0, 14)
 local mpS = Instance.new("UIStroke", mainPanel)
 mpS.Color = COL.accent; mpS.Thickness = 2; mpS.Transparency = 0.1
 
+-- ── HEADER ──
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 52)
 header.BackgroundColor3 = COL.sidebar
@@ -581,17 +585,9 @@ hIcon.Image = "rbxassetid://78841768689548"
 hIcon.ScaleType = Enum.ScaleType.Fit
 hIcon.Parent = header
 
-local hIcon2 = Instance.new("ImageLabel")
-hIcon2.Size = UDim2.new(0, 36, 0, 36)
-hIcon2.Position = UDim2.new(0, 48, 0.5, -18)
-hIcon2.BackgroundTransparency = 1
-hIcon2.Image = "rbxassetid://119119802324337"
-hIcon2.ScaleType = Enum.ScaleType.Fit
-hIcon2.Parent = header
-
 local hTitle = Instance.new("TextLabel")
-hTitle.Size = UDim2.new(0, 180, 0, 20)
-hTitle.Position = UDim2.new(0, 90, 0, 8)
+hTitle.Size = UDim2.new(0, 220, 0, 20)
+hTitle.Position = UDim2.new(0, 50, 0, 8)
 hTitle.BackgroundTransparency = 0.99
 hTitle.Text = "UNDOCALL'S HUB"
 hTitle.TextColor3 = COL.text
@@ -601,8 +597,8 @@ hTitle.TextXAlignment = Enum.TextXAlignment.Left
 hTitle.Parent = header
 
 local hVersion = Instance.new("TextLabel")
-hVersion.Size = UDim2.new(0, 100, 0, 14)
-hVersion.Position = UDim2.new(0, 90, 0, 28)
+hVersion.Size = UDim2.new(0, 80, 0, 14)
+hVersion.Position = UDim2.new(0, 50, 0, 28)
 hVersion.BackgroundTransparency = 1
 hVersion.Text = "v7  NO MERCY"
 hVersion.TextColor3 = COL.accentLight
@@ -637,6 +633,7 @@ closeBtn.AutoButtonColor = false
 closeBtn.Parent = header
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
+-- ── REOPEN LOGO BUTTON (custom image, no skull text) ──
 local reopenBtn = Instance.new("TextButton")
 reopenBtn.Size = UDim2.new(0, 44, 0, 44)
 reopenBtn.Position = UDim2.new(0.5, -22, 0.5, -22)
@@ -701,6 +698,7 @@ minimizeBtn.MouseButton1Click:Connect(function()
     if panelMinimized then closePanel() end
 end)
 
+-- ── SIDEBAR ──
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0, 112, 1, -52)
 sidebar.Position = UDim2.new(0, 0, 0, 52)
@@ -1001,11 +999,8 @@ keyActivatedText.Parent = keyActivatedFrame
 
 local function submitKey()
     if checkKey(keyInput.Text) then
-        keyVerified = true
-        pcall(function()
-            if type(writefile) == "function" then
-                writefile(KEY_FILE, keyInput.Text)
-            end
+        keyVerified = true; pcall(function() 
+            if writefile then writefile(KEY_FILE, keyInput.Text) end
         end)
         keyInput.Visible = false
         getKeyBtn.Visible = false
@@ -1017,10 +1012,10 @@ local function submitKey()
     end
 end
 
-getKeyBtn.MouseButton1Click:Connect(function()
+getKeyBtn.MouseButton1Click:Connect(function() 
     pcall(function() setclipboard(KEY_LINK) end)
     playSound("rbxassetid://12221976")
-    notify("Discord", "Link copied to clipboard!", 3)
+    notify("Discord", "Link copied to clipboard!", 3) 
 end)
 enterKeyBtn.MouseButton1Click:Connect(submitKey)
 keyInput.FocusLost:Connect(function(e) if e then submitKey() end end)
@@ -1175,17 +1170,7 @@ local miscPage = addPage("Misc")
 addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
-    pcall(function()
-        if type(loadstring) == "function" and type(game.HttpGet) == "function" then
-            local code = game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol")
-            if code and type(code) == "string" and not code:find("404: Not Found") then
-                local chunk = loadstring(code, "AntiKick")
-                if chunk then
-                    pcall(chunk)
-                end
-            end
-        end
-    end)
+    -- Removed third-party loadstring because it causes 'attempt to call a nil value' on some executors
 end)
 
 -- ═══════════ SURPRISE PAGE ═══════════
@@ -1249,20 +1234,22 @@ claimBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+-- Mutation hook
 pcall(function()
-    local mt = getrawmetatable(game)
-    if not mt then return end
-    local oldNamecall = mt.__namecall
-    setreadonly(mt, false)
-    mt.__namecall = newcclosure(function(self, ...)
-        local method = getnamecallmethod()
-        local args = {...}
-        if autoMutationEnabled and not checkcaller() and method == "FireServer" and self.Name == "RoundCleared" then
-            if args[2] == false then return oldNamecall(self, args[1], true) end
-        end
-        return oldNamecall(self, ...)
-    end)
-    setreadonly(mt, true)
+    if getrawmetatable and setreadonly and newcclosure then
+        local mt = getrawmetatable(game)
+        local oldNamecall = mt.__namecall
+        setreadonly(mt, false)
+        mt.__namecall = newcclosure(function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            if autoMutationEnabled and not checkcaller() and method == "FireServer" and self.Name == "RoundCleared" then
+                if args[2] == false then return oldNamecall(self, args[1], true) end
+            end
+            return oldNamecall(self, ...)
+        end)
+        setreadonly(mt, true)
+    end
 end)
 
 local mutationStatus = Instance.new("TextLabel")
@@ -1316,6 +1303,7 @@ local function toggleWhitelistPlayer(plr)
     rebuildChips()
 end
 
+-- ── Chip scroll — ONLY safe player names, clean list ──
 local chipScroll = Instance.new("ScrollingFrame")
 chipScroll.Size = UDim2.new(1, 0, 0, 100)
 chipScroll.BackgroundColor3 = Color3.fromRGB(14, 8, 8)
@@ -1392,6 +1380,7 @@ rebuildChips = function()
 end
 rebuildChips()
 
+-- No Mercy Target Section (Moved to Bonus)
 local nmDivider = Instance.new("Frame")
 nmDivider.Size = UDim2.new(1, 0, 0, 1); nmDivider.BackgroundColor3 = COL.border; nmDivider.BackgroundTransparency = 0.5
 nmDivider.BorderSizePixel = 0; nmDivider.Parent = bonusPage
@@ -1414,7 +1403,9 @@ nmSearchBox.FocusLost:Connect(function(enterPressed)
             noMercyTargetName = found.Name
             nmSearchBox.Text = "@" .. found.Name
             notify("No Mercy", "Target set to " .. found.Name, 2)
-            if noMercyTargetToggle then noMercyTargetToggle.set(true) end
+            if noMercyTargetToggle then
+                noMercyTargetToggle.set(true)
+            end
         else
             notify("Not Found", "No player found.", 3)
         end
@@ -1424,48 +1415,65 @@ end)
 noMercyTargetToggle = addToggleRow(bonusPage, "No Mercy Target", function(enabled)
     if enabled and not keyVerified then
         notify("Locked", "Enter key first", 3)
-        noMercyTargetToggle.set(false); return
+        noMercyTargetToggle.set(false)
+        return
     end
+
     if enabled then
         if not noMercyTargetPlayer or not noMercyTargetPlayer.Parent then
             notify("Error", "Type a valid name first!", 3)
-            noMercyTargetToggle.set(false); return
+            noMercyTargetToggle.set(false)
+            return
         end
-        if autoVictim and autoVictimToggle then autoVictimToggle.set(false) end
+        if autoVictim and autoVictimToggle then
+            autoVictimToggle.set(false)
+        end
         noMercyTargetOn = true
+        -- The heartbeat loop will safely handle starting the surprise loop
     else
         noMercyTargetOn = false
         if not autoVictim then
-            surpriseOn = false; ghostTarget = nil; victimLocked = false
+            surpriseOn = false
+            ghostTarget = nil
+            victimLocked = false
         end
     end
 end)
 
+-- Friendly Fire toggle — only on this page; also mirrored on floating strip
 local ffToggle = addToggleRow(bonusPage, "Friendly Fire", function(enabled)
     friendlyFireEnabled = enabled
     notify("Friendly Fire", enabled and "ON — friends targetable" or "OFF — friends safe", 3)
 end)
 
+-- Click Player to Safe
 local clickToggle = addToggleRow(bonusPage, "Click Player to Safe", function(enabled)
     clickWhitelistMode = enabled
     notify("Click to Safe", enabled and "Click a player to protect/unprotect" or "Off", 3)
 end)
 
+-- Auto Victim toggle (placed inside bonus page; floating strip also has it)
 local avPanelRef
 local avMiniSwitchBgRef, avMiniKnobRef
 
 autoVictimToggle = addToggleRow(bonusPage, "Auto Victim (No Mercy)", function(enabled)
     if enabled and not keyVerified then notify("Locked", "Enter key first", 3); autoVictimToggle.set(false); return end
+    
     if enabled and noMercyTargetOn then
         if noMercyTargetToggle then noMercyTargetToggle.set(false) end
     end
+
     autoVictim = enabled
     if enabled then
         if avPanelRef then avPanelRef.Visible = true end
         updateAvPanelVictim(nil)
         notify("Auto Victim", "ON — floating panel active", 3)
     else
-        surpriseOn = false; victimLocked = false; ghostTarget = nil; ATK.last = nil; proximityHistory = {}
+        surpriseOn   = false
+        victimLocked = false
+        ghostTarget  = nil
+        ATK.last     = nil
+        proximityHistory = {}
         if avPanelRef then avPanelRef.Visible = false end
         notify("Auto Victim", "OFF", 2)
     end
@@ -1480,6 +1488,7 @@ autoVictimToggle = addToggleRow(bonusPage, "Auto Victim (No Mercy)", function(en
     end
 end)
 
+-- ── Click-to-safe raycast ──
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not clickWhitelistMode then return end
     if input.UserInputType ~= Enum.UserInputType.MouseButton1
@@ -1991,6 +2000,7 @@ RunService.Heartbeat:Connect(function()
         return
     end
 
+    -- Normal Auto Victim tracking
     local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
     local now = tick()
@@ -2013,8 +2023,11 @@ local function resolveAttacker()
     local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return nil end
     local myPos = myRoot.Position
+    local now = tick()
+
     local closestEnemy = nil
     local closestDist = 35
+
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= lp and p.Character then
             local r = p.Character:FindFirstChild("HumanoidRootPart")
@@ -2022,8 +2035,12 @@ local function resolveAttacker()
             if r and h and h.Health > 0 then
                 local d = (myPos - r.Position).Magnitude
                 if d <= closestDist then
-                    if isWhitelisted(p) then return nil
-                    else closestEnemy = p; closestDist = d end
+                    if isWhitelisted(p) then
+                        return nil
+                    else
+                        closestEnemy = p
+                        closestDist = d
+                    end
                 end
             end
         end
@@ -2042,10 +2059,12 @@ RunService.Heartbeat:Connect(function()
         if lp.Character then local h = lp.Character:FindFirstChildOfClass("Humanoid")
             if h then lastHealth = h.Health end end; return
     end
+    
     local myChar = lp.Character; local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
     if not myHum then return end
     local cur = myHum.Health; local drop = lastHealth - cur
     if drop >= AV.MIN_DAMAGE then
+        local hpPct = cur / math.max(myHum.MaxHealth, 1)
         local lockedValid = false
         if victimLocked and ghostTarget and ghostTarget.Character and not isWhitelisted(ghostTarget) then
             local r = ghostTarget.Character:FindFirstChild("HumanoidRootPart")
@@ -2054,10 +2073,12 @@ RunService.Heartbeat:Connect(function()
         end
         if not lockedValid then
             local attacker = resolveAttacker()
-            if attacker then
-                lockAttacker(attacker)
+            if attacker then 
+                lockAttacker(attacker) 
             else
-                surpriseOn = false; ghostTarget = nil; victimLocked = false
+                surpriseOn = false
+                ghostTarget = nil
+                victimLocked = false
                 updateAvPanelVictim(nil)
             end
         end
