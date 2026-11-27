@@ -10,9 +10,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lp = Players.LocalPlayer
 while not lp do task.wait() lp = Players.LocalPlayer end
 
-local genv = (type(getgenv) == "function" and getgenv)
-    or function() return _G end
-
 local ARENA_TELEPORT = Vector3.new(-760, 14, 2040)
 
 -- ═══════════ STATE ═══════════
@@ -95,7 +92,7 @@ local function checkKey(input)
 end
 
 pcall(function()
-    if isfile and isfile(KEY_FILE) then
+    if isfile(KEY_FILE) then
         local savedKey = readfile(KEY_FILE)
         if savedKey and checkKey(savedKey) then keyVerified = true end
     end
@@ -156,8 +153,8 @@ local function avJitter(a, b) task.wait(avRnd(a, b)) end
 local updateAvPanelVictim = function(_name) end
 local autoVictimToggle
 
-genv().superPowerEnabled = false
-genv().infiniteJumpEnabled = false
+getgenv().superPowerEnabled = false
+getgenv().infiniteJumpEnabled = false
 
 local ALL_STATES = {
     Enum.HumanoidStateType.Climbing, Enum.HumanoidStateType.FallingDown,
@@ -339,10 +336,10 @@ local function startFlyV3()
         local isR6 = (hum.RigType == Enum.HumanoidRigType.R6)
         local torso = isR6 and char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
         if not torso then FLY.active = false return end
-        local bg = Instance.new("BodyGyro")
-        bg.P = 9e4; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.CFrame = torso.CFrame; bg.Parent = torso
-        local bv = Instance.new("BodyVelocity")
-        bv.Velocity = Vector3.new(0, 0.1, 0); bv.MaxForce = Vector3.new(9e9, 9e9, 9e9); bv.Parent = torso
+        local bg = Instance.new("BodyGyro", torso)
+        bg.P = 9e4; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.CFrame = torso.CFrame
+        local bv = Instance.new("BodyVelocity", torso)
+        bv.Velocity = Vector3.new(0, 0.1, 0); bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
         hum.PlatformStand = true
         while FLY.active do
             RunService.RenderStepped:Wait()
@@ -712,6 +709,7 @@ sbL.Padding = UDim.new(0, 5)
 local sbP = Instance.new("UIPadding", sidebar)
 sbP.PaddingTop = UDim.new(0, 10); sbP.PaddingLeft = UDim.new(0, 6); sbP.PaddingRight = UDim.new(0, 6)
 
+-- sidebar right divider
 local sDiv = Instance.new("Frame")
 sDiv.Size = UDim2.new(0, 1, 1, -52)
 sDiv.Position = UDim2.new(0, 112, 0, 52)
@@ -958,15 +956,15 @@ local ekS = Instance.new("UIStroke", enterKeyBtn); ekS.Color = COL.accentLight; 
 
 local keyActivatedFrame = Instance.new("Frame")
 keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
-keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15)
+keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15) -- Dark green
 keyActivatedFrame.BackgroundTransparency = 0.1
 keyActivatedFrame.BorderSizePixel = 0
 keyActivatedFrame.Visible = keyVerified
 keyActivatedFrame.Parent = keyPage
-Instance.new("UICorner", keyActivatedFrame).CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", keyActivatedFrame).CornerRadius = UDim.new(1, 0) -- Pill shape
 
 local kac = Instance.new("UIStroke", keyActivatedFrame)
-kac.Color = Color3.fromRGB(60, 255, 100)
+kac.Color = Color3.fromRGB(60, 255, 100) -- Bright green stroke
 kac.Thickness = 1.5
 kac.Transparency = 0
 
@@ -1000,24 +998,15 @@ keyActivatedText.Parent = keyActivatedFrame
 
 local function submitKey()
     if checkKey(keyInput.Text) then
-        keyVerified = true; pcall(function() 
-            if writefile then writefile(KEY_FILE, keyInput.Text) end
-        end)
-        keyInput.Visible = false
-        getKeyBtn.Visible = false
-        enterKeyBtn.Visible = false
-        keyActivatedFrame.Visible = true
+        keyVerified = true; pcall(function() writefile(KEY_FILE, keyInput.Text) end)
+        keyInput.Visible = false; getKeyBtn.Visible = false; enterKeyBtn.Visible = false; keyActivatedFrame.Visible = true
         playSound("rbxassetid://12221976"); notify("✓ Unlocked", "All OP features active!", 3)
     else
         keyInput.Text = ""; playSound("rbxassetid://12221976"); notify("Invalid Key", "Get key from Discord", 3)
     end
 end
 
-getKeyBtn.MouseButton1Click:Connect(function() 
-    pcall(function() setclipboard(KEY_LINK) end)
-    playSound("rbxassetid://12221976")
-    notify("Discord", "Link copied to clipboard!", 3) 
-end)
+getKeyBtn.MouseButton1Click:Connect(function() pcall(function() setclipboard(KEY_LINK) end); playSound("rbxassetid://12221976"); notify("Discord", "Link copied to clipboard!", 3) end)
 enterKeyBtn.MouseButton1Click:Connect(submitKey)
 keyInput.FocusLost:Connect(function(e) if e then submitKey() end end)
 
@@ -1160,11 +1149,19 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 addToggleRow(movePage, "Super Power", function(enabled)
-    genv().superPowerEnabled = enabled
+    getgenv().superPowerEnabled = enabled
     if not enabled then local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
         if hum then hum.WalkSpeed = 16; hum.JumpPower = 50 end end
 end)
-addToggleRow(movePage, "Infinite Jump", function(enabled) genv().infiniteJumpEnabled = enabled end)
+addToggleRow(movePage, "Infinite Jump", function(enabled) getgenv().infiniteJumpEnabled = enabled end)
+
+-- ═══════════ MISC PAGE ═══════════
+local miscPage = addPage("Misc")
+addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
+addButtonRow(miscPage, "AntiKick", function()
+    notify("AntiKick", "Shield active — blocking false kicks", 5)
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol"))()
+end)
 
 -- ═══════════ SURPRISE PAGE ═══════════
 local surprisePage = addPage("Surprise")
@@ -1229,20 +1226,18 @@ end)
 
 -- Mutation hook
 pcall(function()
-    if getrawmetatable and setreadonly and newcclosure then
-        local mt = getrawmetatable(game)
-        local oldNamecall = mt.__namecall
-        setreadonly(mt, false)
-        mt.__namecall = newcclosure(function(self, ...)
-            local method = getnamecallmethod()
-            local args = {...}
-            if autoMutationEnabled and not checkcaller() and method == "FireServer" and self.Name == "RoundCleared" then
-                if args[2] == false then return oldNamecall(self, args[1], true) end
-            end
-            return oldNamecall(self, ...)
-        end)
-        setreadonly(mt, true)
-    end
+    local mt = getrawmetatable(game)
+    local oldNamecall = mt.__namecall
+    setreadonly(mt, false)
+    mt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+        if autoMutationEnabled and not checkcaller() and method == "FireServer" and self.Name == "RoundCleared" then
+            if args[2] == false then return oldNamecall(self, args[1], true) end
+        end
+        return oldNamecall(self, ...)
+    end)
+    setreadonly(mt, true)
 end)
 
 local mutationStatus = Instance.new("TextLabel")
@@ -1422,7 +1417,8 @@ noMercyTargetToggle = addToggleRow(bonusPage, "No Mercy Target", function(enable
             autoVictimToggle.set(false)
         end
         noMercyTargetOn = true
-        -- The heartbeat loop will safely handle starting the surprise loop
+        -- do NOT touch ghostTarget / surpriseOn here.
+        -- the heartbeat loop will set them and start the surprise loop safely.
     else
         noMercyTargetOn = false
         if not autoVictim then
@@ -2019,7 +2015,7 @@ local function resolveAttacker()
     local now = tick()
 
     local closestEnemy = nil
-    local closestDist = 35
+    local closestDist = 35 -- Strict hit range limit
 
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= lp and p.Character then
@@ -2029,6 +2025,7 @@ local function resolveAttacker()
                 local d = (myPos - r.Position).Magnitude
                 if d <= closestDist then
                     if isWhitelisted(p) then
+                        -- If friend is very close hitting us, cancel retaliation and act normal
                         return nil
                     else
                         closestEnemy = p
@@ -2069,6 +2066,7 @@ RunService.Heartbeat:Connect(function()
             if attacker then 
                 lockAttacker(attacker) 
             else
+                -- Friend hit us, or no one close. Act completely normal, stop attacking.
                 surpriseOn = false
                 ghostTarget = nil
                 victimLocked = false
@@ -2099,7 +2097,7 @@ end)
 RunService.Heartbeat:Connect(function()
     local char = lp.Character; if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and genv().superPowerEnabled then hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true end
+    if hum and getgenv().superPowerEnabled then hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true end
     if hitboxEnabled then
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= lp and not isWhitelisted(p) and p.Character then
@@ -2117,7 +2115,7 @@ end)
 
 -- ═══════════ INFINITE JUMP ═══════════
 UserInputService.JumpRequest:Connect(function()
-    if genv().superPowerEnabled or genv().infiniteJumpEnabled then
+    if getgenv().superPowerEnabled or getgenv().infiniteJumpEnabled then
         local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
         if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
     end
