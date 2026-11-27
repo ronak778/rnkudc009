@@ -1238,7 +1238,7 @@ local miscPage = addPage("Misc")
 addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/SUUUUUS00000/MEGGD-Anti-kick/refs/heads/main/MEGGD%20Best%20Anti-kick.lua"))()
+    loadstring(game:HttpGet(""))()
 end)
 
 -- ═══════════ SURPRISE PAGE ═══════════
