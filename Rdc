@@ -93,7 +93,6 @@ local function checkKey(input)
     return false
 end
 
--- FIX 1: guard isfile before calling
 pcall(function()
     if type(isfile) == "function" and isfile(KEY_FILE) then
         local savedKey = readfile(KEY_FILE)
@@ -582,9 +581,17 @@ hIcon.Image = "rbxassetid://78841768689548"
 hIcon.ScaleType = Enum.ScaleType.Fit
 hIcon.Parent = header
 
+local hIcon2 = Instance.new("ImageLabel")
+hIcon2.Size = UDim2.new(0, 36, 0, 36)
+hIcon2.Position = UDim2.new(0, 48, 0.5, -18)
+hIcon2.BackgroundTransparency = 1
+hIcon2.Image = "rbxassetid://119119802324337"
+hIcon2.ScaleType = Enum.ScaleType.Fit
+hIcon2.Parent = header
+
 local hTitle = Instance.new("TextLabel")
-hTitle.Size = UDim2.new(0, 220, 0, 20)
-hTitle.Position = UDim2.new(0, 50, 0, 8)
+hTitle.Size = UDim2.new(0, 180, 0, 20)
+hTitle.Position = UDim2.new(0, 90, 0, 8)
 hTitle.BackgroundTransparency = 0.99
 hTitle.Text = "UNDOCALL'S HUB"
 hTitle.TextColor3 = COL.text
@@ -594,8 +601,8 @@ hTitle.TextXAlignment = Enum.TextXAlignment.Left
 hTitle.Parent = header
 
 local hVersion = Instance.new("TextLabel")
-hVersion.Size = UDim2.new(0, 80, 0, 14)
-hVersion.Position = UDim2.new(0, 50, 0, 28)
+hVersion.Size = UDim2.new(0, 100, 0, 14)
+hVersion.Position = UDim2.new(0, 90, 0, 28)
 hVersion.BackgroundTransparency = 1
 hVersion.Text = "v7  NO MERCY"
 hVersion.TextColor3 = COL.accentLight
@@ -995,7 +1002,6 @@ keyActivatedText.Parent = keyActivatedFrame
 local function submitKey()
     if checkKey(keyInput.Text) then
         keyVerified = true
-        -- FIX 2: guard writefile before calling
         pcall(function()
             if type(writefile) == "function" then
                 writefile(KEY_FILE, keyInput.Text)
@@ -1170,10 +1176,14 @@ addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics()
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
     pcall(function()
-        local code = game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol")
-        if code then
-            local chunk = loadstring(code)
-            if chunk then chunk() end
+        if type(loadstring) == "function" and type(game.HttpGet) == "function" then
+            local code = game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol")
+            if code and type(code) == "string" and not code:find("404: Not Found") then
+                local chunk = loadstring(code, "AntiKick")
+                if chunk then
+                    pcall(chunk)
+                end
+            end
         end
     end)
 end)
@@ -1241,6 +1251,7 @@ end)
 
 pcall(function()
     local mt = getrawmetatable(game)
+    if not mt then return end
     local oldNamecall = mt.__namecall
     setreadonly(mt, false)
     mt.__namecall = newcclosure(function(self, ...)
