@@ -652,7 +652,7 @@ local reopenLogo = Instance.new("ImageLabel")
 reopenLogo.Size = UDim2.new(0, 32, 0, 32)
 reopenLogo.Position = UDim2.new(0.5, -16, 0.5, -16)
 reopenLogo.BackgroundTransparency = 1
-reopenLogo.Image = "rbxassetid://126143883829114"
+reopenLogo.Image = "rbxassetid://106910950018347"
 reopenLogo.ScaleType = Enum.ScaleType.Fit
 reopenLogo.Parent = reopenBtn
 
