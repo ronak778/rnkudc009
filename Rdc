@@ -1371,23 +1371,19 @@ noMercyTargetToggle = addToggleRow(bonusPage, "No Mercy Target", function(enable
         noMercyTargetToggle.set(false)
         return
     end
-    
+
     if enabled then
         if not noMercyTargetPlayer or not noMercyTargetPlayer.Parent then
             notify("Error", "Type a valid name first!", 3)
             noMercyTargetToggle.set(false)
             return
         end
-        -- Turn off Auto Victim
         if autoVictim and autoVictimToggle then
             autoVictimToggle.set(false)
         end
         noMercyTargetOn = true
-        ghostTarget = noMercyTargetPlayer
-        if not surpriseOn then
-            surpriseOn = true
-            startSurpriseLoop()
-        end
+        -- do NOT touch ghostTarget / surpriseOn here.
+        -- the heartbeat loop will set them and start the surprise loop safely.
     else
         noMercyTargetOn = false
         if not autoVictim then
