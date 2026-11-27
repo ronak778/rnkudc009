@@ -534,72 +534,6 @@ local COL = {
     glow        = Color3.fromRGB(220, 50, 50),
 }
 
--- ── MAIN PANEL ──
-local mainPanel = Instance.new("Frame")
-mainPanel.Size = UDim2.new(0, 490, 0, 395)
-mainPanel.Position = UDim2.new(0.5, -245, 0.5, -197)
-mainPanel.BackgroundColor3 = COL.bg
-mainPanel.BackgroundTransparency = 0.1
-mainPanel.BorderSizePixel = 0
-mainPanel.ClipsDescendants = true
-mainPanel.Visible = true
-mainPanel.Active = true
-mainPanel.Parent = ScreenGui
-Instance.new("UICorner", mainPanel).CornerRadius = UDim.new(0, 14)
-local mpS = Instance.new("UIStroke", mainPanel)
-mpS.Color = COL.accent; mpS.Thickness = 2; mpS.Transparency = 0.1
-
--- ── HEADER ──
-local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 52)
-header.BackgroundColor3 = COL.sidebar
-header.BackgroundTransparency = 0.05
-header.BorderSizePixel = 0
-header.Active = true
-header.Parent = mainPanel
-Instance.new("UICorner", header).CornerRadius = UDim.new(0, 14)
-
--- header accent bar
-local hAccent = Instance.new("Frame")
-hAccent.Size = UDim2.new(1, 0, 0, 2)
-hAccent.Position = UDim2.new(0, 0, 1, -2)
-hAccent.BackgroundColor3 = COL.accent
-hAccent.BorderSizePixel = 0
-hAccent.Parent = header
-
--- Custom Logo Image instead of skull text
-local hIcon = Instance.new("ImageLabel")
-hIcon.Size = UDim2.new(0, 36, 0, 36)
-hIcon.Position = UDim2.new(0, 8, 0.5, -18)
-hIcon.BackgroundTransparency = 1
-hIcon.Image = "rbxassetid://78841768689548"
-hIcon.ScaleType = Enum.ScaleType.Fit
--- ═══════════ UI SETUP — RED THEME ═══════════
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "UndocallsHubV7"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-pcall(function() ScreenGui.Parent = gethui() end)
-if not ScreenGui.Parent then ScreenGui.Parent = lp:WaitForChild("PlayerGui") end
-
--- RED COLOR PALETTE
-local COL = {
-    bg          = Color3.fromRGB(20, 10, 10),
-    card        = Color3.fromRGB(45, 20, 20),
-    accent      = Color3.fromRGB(200, 30, 30),
-    accentLight = Color3.fromRGB(255, 90, 90),
-    accentDark  = Color3.fromRGB(140, 15, 15),
-    text        = Color3.fromRGB(255, 240, 240),
-    textDim     = Color3.fromRGB(200, 170, 170),
-    border      = Color3.fromRGB(120, 50, 50),
-    btnBg       = Color3.fromRGB(60, 20, 20),
-    sidebar     = Color3.fromRGB(28, 12, 12),
-    sidebarItem = Color3.fromRGB(55, 22, 22),
-    red         = Color3.fromRGB(255, 75, 75),
-    green       = Color3.fromRGB(75, 255, 120),
-    glow        = Color3.fromRGB(220, 50, 50),
-}
-
 -- ── CANVAS GROUP (fades whole panel as one layer) ──
 local canvas = Instance.new("CanvasGroup")
 canvas.Name = "HubCanvas"
@@ -1876,14 +1810,14 @@ end)
 local DRAG = { active=false, start=nil, pos=nil }
 header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        DRAG.active=true; DRAG.start=input.Position; DRAG.pos=mainPanel.Position
+        DRAG.active=true; DRAG.start=input.Position; DRAG.pos=canvas.Position
         input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then DRAG.active=false end end)
     end
 end)
 UserInputService.InputChanged:Connect(function(input)
     if DRAG.active and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
         local delta = input.Position - DRAG.start
-        mainPanel.Position = UDim2.new(DRAG.pos.X.Scale, DRAG.pos.X.Offset + delta.X, DRAG.pos.Y.Scale, DRAG.pos.Y.Offset + delta.Y)
+        canvas.Position = UDim2.new(DRAG.pos.X.Scale, DRAG.pos.X.Offset + delta.X, DRAG.pos.Y.Scale, DRAG.pos.Y.Offset + delta.Y)
     end
 end)
 
