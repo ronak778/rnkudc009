@@ -1166,14 +1166,6 @@ addToggleRow(movePage, "Super Power", function(enabled)
 end)
 addToggleRow(movePage, "Infinite Jump", function(enabled) genv().infiniteJumpEnabled = enabled end)
 
--- ═══════════ MISC PAGE ═══════════
-local miscPage = addPage("Misc")
-addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
-addButtonRow(miscPage, "AntiKick", function()
-    notify("AntiKick", "Shield active — blocking false kicks", 5)
-    -- Removed third-party loadstring because it causes 'attempt to call a nil value' on some executors
-end)
-
 -- ═══════════ SURPRISE PAGE ═══════════
 local surprisePage = addPage("Surprise")
 
