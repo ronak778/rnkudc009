@@ -988,6 +988,62 @@ checkLbl.Size = UDim2.new(1, 0, 1, 0)
 checkLbl.BackgroundTransparency = 1
 checkLbl.Text = "✓"
 checkLbl.TextColor3 = Color3.fromRGB(10, 35, 15)
+
+-- ═══════════ KEY PAGE ═══════════
+local keyPage = addPage("Key")
+
+local keyInput = Instance.new("TextBox")
+keyInput.Size = UDim2.new(1, 0, 0, 40); keyInput.BackgroundColor3 = COL.card; keyInput.BackgroundTransparency = 0.05
+keyInput.PlaceholderText = "Enter key..."; keyInput.Text = ""; keyInput.TextColor3 = COL.text
+keyInput.Font = Enum.Font.GothamMedium; keyInput.TextSize = 13; keyInput.ClearTextOnFocus = false
+keyInput.Visible = not keyVerified; keyInput.Parent = keyPage
+Instance.new("UICorner", keyInput).CornerRadius = UDim.new(0, 8)
+local kiS = Instance.new("UIStroke", keyInput); kiS.Color = COL.border; kiS.Thickness = 1; kiS.Transparency = 0.5
+
+local getKeyBtn = Instance.new("TextButton")
+getKeyBtn.Size = UDim2.new(1, 0, 0, 36); getKeyBtn.BackgroundColor3 = COL.btnBg; getKeyBtn.BackgroundTransparency = 0.05
+getKeyBtn.Text = "Get Key  ➜ Discord"; getKeyBtn.TextColor3 = Color3.fromRGB(114, 160, 255)
+getKeyBtn.Font = Enum.Font.GothamBold; getKeyBtn.TextSize = 13; getKeyBtn.AutoButtonColor = false
+getKeyBtn.Visible = not keyVerified; getKeyBtn.Parent = keyPage
+Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 8)
+local gkS = Instance.new("UIStroke", getKeyBtn); gkS.Color = COL.border; gkS.Thickness = 1; gkS.Transparency = 0.5
+
+local enterKeyBtn = Instance.new("TextButton")
+enterKeyBtn.Size = UDim2.new(1, 0, 0, 36); enterKeyBtn.BackgroundColor3 = COL.accentDark; enterKeyBtn.BackgroundTransparency = 0.05
+enterKeyBtn.Text = "✓  Activate Key"; enterKeyBtn.TextColor3 = COL.text
+enterKeyBtn.Font = Enum.Font.GothamBold; enterKeyBtn.TextSize = 13; enterKeyBtn.AutoButtonColor = false
+enterKeyBtn.Visible = not keyVerified; enterKeyBtn.Parent = keyPage
+Instance.new("UICorner", enterKeyBtn).CornerRadius = UDim.new(0, 8)
+local ekS = Instance.new("UIStroke", enterKeyBtn); ekS.Color = COL.accentLight; ekS.Thickness = 1; ekS.Transparency = 0.4
+
+-- ── YOUR CUSTOM PILL BANNER ──
+local keyActivatedFrame = Instance.new("Frame")
+keyActivatedFrame.Size = UDim2.new(1, 0, 0, 44)
+keyActivatedFrame.BackgroundColor3 = Color3.fromRGB(10, 35, 15)
+keyActivatedFrame.BackgroundTransparency = 0.1
+keyActivatedFrame.BorderSizePixel = 0
+keyActivatedFrame.Visible = keyVerified
+keyActivatedFrame.Parent = keyPage
+Instance.new("UICorner", keyActivatedFrame).CornerRadius = UDim.new(1, 0)
+
+local kac = Instance.new("UIStroke", keyActivatedFrame)
+kac.Color = Color3.fromRGB(60, 255, 100)
+kac.Thickness = 1.5
+kac.Transparency = 0
+
+local iconBg = Instance.new("Frame")
+iconBg.Size = UDim2.new(0, 24, 0, 24)
+iconBg.Position = UDim2.new(0, 10, 0.5, -12)
+iconBg.BackgroundColor3 = Color3.fromRGB(60, 255, 100)
+iconBg.BorderSizePixel = 0
+iconBg.Parent = keyActivatedFrame
+Instance.new("UICorner", iconBg).CornerRadius = UDim.new(1, 0)
+
+local checkLbl = Instance.new("TextLabel")
+checkLbl.Size = UDim2.new(1, 0, 1, 0)
+checkLbl.BackgroundTransparency = 1
+checkLbl.Text = "✓"
+checkLbl.TextColor3 = Color3.fromRGB(10, 35, 15)
 checkLbl.Font = Enum.Font.GothamBold
 checkLbl.TextSize = 16
 checkLbl.Parent = iconBg
@@ -1006,7 +1062,10 @@ keyActivatedText.Parent = keyActivatedFrame
 local function submitKey()
     if checkKey(keyInput.Text) then
         keyVerified = true; pcall(function() writefile(KEY_FILE, keyInput.Text) end)
-        keyInput.Visible = false; getKeyBtn.Visible = false; enterKeyBtn.Visible = false; keyActivatedFrame.Visible = true
+        keyInput.Visible = false
+        getKeyBtn.Visible = false
+        enterKeyBtn.Visible = false
+        keyActivatedFrame.Visible = true
         playSound("rbxassetid://12221976"); notify("✓ Unlocked", "All OP features active!", 3)
     else
         keyInput.Text = ""; playSound("rbxassetid://12221976"); notify("Invalid Key", "Get key from Discord", 3)
