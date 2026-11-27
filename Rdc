@@ -1,4 +1,4 @@
--- ═══════════ UNDOCALL'S HUB v7 — nO MERCY ═══════════
+-- ═══════════ UNDOCALL'S HUB v7 — NO MERCY ═══════════
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -94,7 +94,7 @@ local function checkKey(input)
 end
 
 pcall(function()
-    if isfile(KEY_FILE) then
+    if isfile and isfile(KEY_FILE) then
         local savedKey = readfile(KEY_FILE)
         if savedKey and checkKey(savedKey) then keyVerified = true end
     end
@@ -338,10 +338,10 @@ local function startFlyV3()
         local isR6 = (hum.RigType == Enum.HumanoidRigType.R6)
         local torso = isR6 and char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
         if not torso then FLY.active = false return end
-        local bg = Instance.new("BodyGyro", torso)
-        bg.P = 9e4; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.CFrame = torso.CFrame
-        local bv = Instance.new("BodyVelocity", torso)
-        bv.Velocity = Vector3.new(0, 0.1, 0); bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        local bg = Instance.new("BodyGyro")
+        bg.P = 9e4; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.CFrame = torso.CFrame; bg.Parent = torso
+        local bv = Instance.new("BodyVelocity")
+        bv.Velocity = Vector3.new(0, 0.1, 0); bv.MaxForce = Vector3.new(9e9, 9e9, 9e9); bv.Parent = torso
         hum.PlatformStand = true
         while FLY.active do
             RunService.RenderStepped:Wait()
@@ -999,7 +999,9 @@ keyActivatedText.Parent = keyActivatedFrame
 
 local function submitKey()
     if checkKey(keyInput.Text) then
-        keyVerified = true; pcall(function() writefile(KEY_FILE, keyInput.Text) end)
+        keyVerified = true; pcall(function() 
+            if writefile then writefile(KEY_FILE, keyInput.Text) end
+        end)
         keyInput.Visible = false
         getKeyBtn.Visible = false
         enterKeyBtn.Visible = false
@@ -1058,36 +1060,64 @@ addToggleRow(combatPage, "A-Fling (Anti-Fling)", function(enabled)
 end)
 
 local targetFrame = Instance.new("Frame")
-targetFrame.Size = UDim2.new(1, 0, 0, 70); targetFrame.BackgroundColor3 = COL.card; targetFrame.BackgroundTransparency = 0.05
-targetFrame.BorderSizePixel = 0; targetFrame.Parent = combatPage
+targetFrame.Size = UDim2.new(1, 0, 0, 70)
+targetFrame.BackgroundColor3 = COL.card
+targetFrame.BackgroundTransparency = 0.05
+targetFrame.BorderSizePixel = 0
+targetFrame.Parent = combatPage
 Instance.new("UICorner", targetFrame).CornerRadius = UDim.new(0, 8)
-local tfS = Instance.new("UIStroke", targetFrame); tfS.Color = COL.border; tfS.Thickness = 1; tfS.Transparency = 0.5
+local tfS = Instance.new("UIStroke", targetFrame)
+tfS.Color = COL.border; tfS.Thickness = 1; tfS.Transparency = 0.5
 
 local targetAvatar = Instance.new("ImageLabel")
-targetAvatar.Size = UDim2.new(0, 50, 0, 50); targetAvatar.Position = UDim2.new(0, 10, 0.5, -25)
-targetAvatar.BackgroundColor3 = COL.bg; targetAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=1&w=150&h=150"; targetAvatar.Parent = targetFrame
+targetAvatar.Size = UDim2.new(0, 50, 0, 50)
+targetAvatar.Position = UDim2.new(0, 10, 0.5, -25)
+targetAvatar.BackgroundColor3 = COL.bg
+targetAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=1&w=150&h=150"
+targetAvatar.Parent = targetFrame
 Instance.new("UICorner", targetAvatar).CornerRadius = UDim.new(1, 0)
-local taS = Instance.new("UIStroke", targetAvatar); taS.Color = COL.accent; taS.Thickness = 2
+local taS = Instance.new("UIStroke", targetAvatar)
+taS.Color = COL.accent; taS.Thickness = 2
 
 local targetUsername = Instance.new("TextLabel")
-targetUsername.Size = UDim2.new(1, -80, 0, 22); targetUsername.Position = UDim2.new(0, 70, 0.5, -18)
-targetUsername.BackgroundTransparency = 1; targetUsername.Text = "@playername"; targetUsername.TextColor3 = COL.text
-targetUsername.Font = Enum.Font.GothamBold; targetUsername.TextSize = 13; targetUsername.TextXAlignment = Enum.TextXAlignment.Left
-targetUsername.TextTruncate = Enum.TextTruncate.AtEnd; targetUsername.Parent = targetFrame
+targetUsername.Size = UDim2.new(1, -80, 0, 22)
+targetUsername.Position = UDim2.new(0, 70, 0.5, -18)
+targetUsername.BackgroundTransparency = 1
+targetUsername.Text = "@playername"
+targetUsername.TextColor3 = COL.text
+targetUsername.Font = Enum.Font.GothamBold
+targetUsername.TextSize = 13
+targetUsername.TextXAlignment = Enum.TextXAlignment.Left
+targetUsername.TextTruncate = Enum.TextTruncate.AtEnd
+targetUsername.Parent = targetFrame
 
 local targetDisplayName = Instance.new("TextLabel")
-targetDisplayName.Size = UDim2.new(1, -80, 0, 14); targetDisplayName.Position = UDim2.new(0, 70, 0.5, 6)
-targetDisplayName.BackgroundTransparency = 1; targetDisplayName.Text = ""; targetDisplayName.TextColor3 = COL.textDim
-targetDisplayName.Font = Enum.Font.Gotham; targetDisplayName.TextSize = 11; targetDisplayName.TextXAlignment = Enum.TextXAlignment.Left
-targetDisplayName.TextTruncate = Enum.TextTruncate.AtEnd; targetDisplayName.Parent = targetFrame
+targetDisplayName.Size = UDim2.new(1, -80, 0, 14)
+targetDisplayName.Position = UDim2.new(0, 70, 0.5, 6)
+targetDisplayName.BackgroundTransparency = 1
+targetDisplayName.Text = ""
+targetDisplayName.TextColor3 = COL.textDim
+targetDisplayName.Font = Enum.Font.Gotham
+targetDisplayName.TextSize = 11
+targetDisplayName.TextXAlignment = Enum.TextXAlignment.Left
+targetDisplayName.TextTruncate = Enum.TextTruncate.AtEnd
+targetDisplayName.Parent = targetFrame
 
 local searchBox = Instance.new("TextBox")
-searchBox.Size = UDim2.new(1, 0, 0, 36); searchBox.BackgroundColor3 = COL.card; searchBox.BackgroundTransparency = 0.05
-searchBox.PlaceholderText = "Type @name & press Enter"; searchBox.Text = ""; searchBox.TextColor3 = COL.text
-searchBox.PlaceholderColor3 = COL.textDim; searchBox.Font = Enum.Font.GothamMedium; searchBox.TextSize = 13
-searchBox.ClearTextOnFocus = false; searchBox.Parent = combatPage
+searchBox.Size = UDim2.new(1, 0, 0, 36)
+searchBox.BackgroundColor3 = COL.card
+searchBox.BackgroundTransparency = 0.05
+searchBox.PlaceholderText = "Type @name & press Enter"
+searchBox.Text = ""
+searchBox.TextColor3 = COL.text
+searchBox.PlaceholderColor3 = COL.textDim
+searchBox.Font = Enum.Font.GothamMedium
+searchBox.TextSize = 13
+searchBox.ClearTextOnFocus = false
+searchBox.Parent = combatPage
 Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 8)
-local sbS2 = Instance.new("UIStroke", searchBox); sbS2.Color = COL.border; sbS2.Thickness = 1; sbS2.Transparency = 0.5
+local sbS2 = Instance.new("UIStroke", searchBox)
+sbS2.Color = COL.border; sbS2.Thickness = 1; sbS2.Transparency = 0.5
 
 local targetLockToggle
 searchBox.FocusLost:Connect(function(enterPressed)
@@ -1109,39 +1139,73 @@ searchBox.FocusLost:Connect(function(enterPressed)
 end)
 
 targetLockToggle = addToggleRow(combatPage, "Enable Target Lock", function(enabled)
-    if enabled and not keyVerified then notify("Locked", "Enter key first", 3); targetLockToggle.set(false); return end
-    if enabled and (targetName == "" or not targetName) then notify("Error", "Type a name first!", 2); targetLockToggle.set(false); return end
+    if enabled and not keyVerified then
+        notify("Locked", "Enter key first", 3)
+        targetLockToggle.set(false); return
+    end
+    if enabled and (targetName == "" or not targetName) then
+        notify("Error", "Type a name first!", 2)
+        targetLockToggle.set(false); return
+    end
     targetLockOn = enabled
     if not enabled then
-        local char = lp.Character; if char then local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.AssemblyLinearVelocity = Vector3.zero; hrp.AssemblyAngularVelocity = Vector3.zero end end
+        local char = lp.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+            end
+        end
     else
-        if not target then notify("Waiting", "Waiting for " .. targetName .. " to join...", 3) end
+        if not target then
+            notify("Waiting", "Waiting for " .. targetName .. " to join...", 3)
+        end
     end
 end)
 
 -- ═══════════ MOVEMENT PAGE ═══════════
 local movePage = addPage("Movement")
-addToggleRow(movePage, "Fly V3", function(enabled) if enabled then startFlyV3() else stopFlyV3() end end)
-addValueRow(movePage, "Speed", 1, 1, 10, 1, function(val) FLY.speed = val; if FLY.active then stopFlyV3(); task.wait(0.1); startFlyV3() end end)
+addToggleRow(movePage, "Fly V3", function(enabled)
+    if enabled then startFlyV3() else stopFlyV3() end
+end)
+addValueRow(movePage, "Speed", 1, 1, 10, 1, function(val)
+    FLY.speed = val
+    if FLY.active then stopFlyV3(); task.wait(0.1); startFlyV3() end
+end)
 
 local upDownRow = Instance.new("Frame")
-upDownRow.Size = UDim2.new(1, 0, 0, 40); upDownRow.BackgroundColor3 = COL.card; upDownRow.BackgroundTransparency = 0.05
-upDownRow.BorderSizePixel = 0; upDownRow.Parent = movePage
+upDownRow.Size = UDim2.new(1, 0, 0, 40)
+upDownRow.BackgroundColor3 = COL.card
+upDownRow.BackgroundTransparency = 0.05
+upDownRow.BorderSizePixel = 0
+upDownRow.Parent = movePage
 Instance.new("UICorner", upDownRow).CornerRadius = UDim.new(0, 8)
 
 local upBtn = Instance.new("TextButton")
-upBtn.Size = UDim2.new(0, 100, 0, 30); upBtn.Position = UDim2.new(0, 10, 0.5, -15)
-upBtn.BackgroundColor3 = Color3.fromRGB(50, 160, 90); upBtn.BackgroundTransparency = 0.1
-upBtn.Text = "▲ Up"; upBtn.TextColor3 = Color3.fromRGB(255,255,255); upBtn.Font = Enum.Font.GothamBold; upBtn.TextSize = 13
-upBtn.AutoButtonColor = false; upBtn.Parent = upDownRow
+upBtn.Size = UDim2.new(0, 100, 0, 30)
+upBtn.Position = UDim2.new(0, 10, 0.5, -15)
+upBtn.BackgroundColor3 = Color3.fromRGB(50, 160, 90)
+upBtn.BackgroundTransparency = 0.1
+upBtn.Text = "▲ Up"
+upBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+upBtn.Font = Enum.Font.GothamBold
+upBtn.TextSize = 13
+upBtn.AutoButtonColor = false
+upBtn.Parent = upDownRow
 Instance.new("UICorner", upBtn).CornerRadius = UDim.new(0, 6)
 
 local downBtn = Instance.new("TextButton")
-downBtn.Size = UDim2.new(0, 100, 0, 30); downBtn.Position = UDim2.new(1, -110, 0.5, -15)
-downBtn.BackgroundColor3 = Color3.fromRGB(160, 90, 30); downBtn.BackgroundTransparency = 0.1
-downBtn.Text = "▼ Down"; downBtn.TextColor3 = Color3.fromRGB(255,255,255); downBtn.Font = Enum.Font.GothamBold; downBtn.TextSize = 13
-downBtn.AutoButtonColor = false; downBtn.Parent = upDownRow
+downBtn.Size = UDim2.new(0, 100, 0, 30)
+downBtn.Position = UDim2.new(1, -110, 0.5, -15)
+downBtn.BackgroundColor3 = Color3.fromRGB(160, 90, 30)
+downBtn.BackgroundTransparency = 0.1
+downBtn.Text = "▼ Down"
+downBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+downBtn.Font = Enum.Font.GothamBold
+downBtn.TextSize = 13
+downBtn.AutoButtonColor = false
+downBtn.Parent = upDownRow
 Instance.new("UICorner", downBtn).CornerRadius = UDim.new(0, 6)
 
 upBtn.MouseButton1Down:Connect(function() FLY.upHeld = true end)
@@ -1151,17 +1215,23 @@ downBtn.MouseButton1Down:Connect(function() FLY.downHeld = true end)
 downBtn.MouseButton1Up:Connect(function() FLY.downHeld = false end)
 downBtn.MouseLeave:Connect(function() FLY.downHeld = false end)
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
         FLY.upHeld = false; FLY.downHeld = false
     end
 end)
 
 addToggleRow(movePage, "Super Power", function(enabled)
     genv().superPowerEnabled = enabled
-    if not enabled then local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then hum.WalkSpeed = 16; hum.JumpPower = 50 end end
+    if not enabled then
+        local char = lp.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 16; hum.JumpPower = 50 end
+    end
 end)
-addToggleRow(movePage, "Infinite Jump", function(enabled) genv().infiniteJumpEnabled = enabled end)
+addToggleRow(movePage, "Infinite Jump", function(enabled)
+    genv().infiniteJumpEnabled = enabled
+end)
 
 -- ═══════════ MISC PAGE ═══════════
 local miscPage = addPage("Misc")
@@ -1181,27 +1251,46 @@ end)
 local surprisePage = addPage("Surprise")
 
 local claimBtn = Instance.new("TextButton")
-claimBtn.Size = UDim2.new(1, 0, 0, 40); claimBtn.BackgroundColor3 = COL.accentDark; claimBtn.BackgroundTransparency = 0.05
-claimBtn.TextColor3 = COL.text; claimBtn.Font = Enum.Font.GothamBold; claimBtn.TextSize = 14
-claimBtn.Text = "☠  FREE JESTER CLAIM"; claimBtn.AutoButtonColor = false; claimBtn.Parent = surprisePage
+claimBtn.Size = UDim2.new(1, 0, 0, 40)
+claimBtn.BackgroundColor3 = COL.accentDark
+claimBtn.BackgroundTransparency = 0.05
+claimBtn.TextColor3 = COL.text
+claimBtn.Font = Enum.Font.GothamBold
+claimBtn.TextSize = 14
+claimBtn.Text = "☠  FREE JESTER CLAIM"
+claimBtn.AutoButtonColor = false
+claimBtn.Parent = surprisePage
 Instance.new("UICorner", claimBtn).CornerRadius = UDim.new(0, 8)
-local cbS2 = Instance.new("UIStroke", claimBtn); cbS2.Color = COL.accent; cbS2.Thickness = 1
+local cbS2 = Instance.new("UIStroke", claimBtn)
+cbS2.Color = COL.accent; cbS2.Thickness = 1
 
 local statusLbl = Instance.new("TextLabel")
-statusLbl.Size = UDim2.new(1, 0, 0, 20); statusLbl.BackgroundTransparency = 1; statusLbl.Text = ""
-statusLbl.TextColor3 = COL.textDim; statusLbl.Font = Enum.Font.Gotham; statusLbl.TextSize = 12
-statusLbl.TextWrapped = true; statusLbl.Visible = false; statusLbl.Parent = surprisePage
+statusLbl.Size = UDim2.new(1, 0, 0, 20)
+statusLbl.BackgroundTransparency = 1
+statusLbl.Text = ""
+statusLbl.TextColor3 = COL.textDim
+statusLbl.Font = Enum.Font.Gotham
+statusLbl.TextSize = 12
+statusLbl.TextWrapped = true
+statusLbl.Visible = false
+statusLbl.Parent = surprisePage
 
 claimBtn.MouseButton1Click:Connect(function()
     if not keyVerified then notify("Locked", "Enter key first", 3); return end
-    local char = lp.Character; local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local char = lp.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     if hrp.Position.Z > -1000 then
-        statusLbl.Visible = true; statusLbl.Text = "❌ Must be inside the maze!"; statusLbl.TextColor3 = COL.red
+        statusLbl.Visible = true
+        statusLbl.Text = "❌ Must be inside the maze!"
+        statusLbl.TextColor3 = COL.red
         task.delay(3, function() statusLbl.Visible = false end); return
     end
-    statusLbl.Visible = true; claimBtn.Text = "CLAIMING..."; claimBtn.BackgroundColor3 = Color3.fromRGB(120, 90, 10)
-    statusLbl.Text = "Teleporting to exit..."; statusLbl.TextColor3 = Color3.fromRGB(220, 160, 0)
+    statusLbl.Visible = true
+    claimBtn.Text = "CLAIMING..."
+    claimBtn.BackgroundColor3 = Color3.fromRGB(120, 90, 10)
+    statusLbl.Text = "Teleporting to exit..."
+    statusLbl.TextColor3 = Color3.fromRGB(220, 160, 0)
     task.spawn(function()
         local success, err = pcall(function()
             hrp.CFrame = CFrame.new(-6.76, 3.20, -3741.35)
@@ -1226,19 +1315,22 @@ claimBtn.MouseButton1Click:Connect(function()
             pcall(function() RespawnRE2:FireServer() end)
         end)
         if success then
-            statusLbl.Text = "✅ Skins claimed!"; statusLbl.TextColor3 = COL.green
-            claimBtn.Text = "☠  FREE JESTER CLAIM"; claimBtn.BackgroundColor3 = COL.accentDark
+            statusLbl.Text = "✅ Skins claimed!"
+            statusLbl.TextColor3 = COL.green
+            claimBtn.Text = "☠  FREE JESTER CLAIM"
+            claimBtn.BackgroundColor3 = COL.accentDark
             notify("Surprise", "Claim sequence finished!", 4)
             task.delay(4, function() statusLbl.Visible = false end)
         else
-            statusLbl.Text = "❌ Error: " .. tostring(err); statusLbl.TextColor3 = COL.red
-            claimBtn.Text = "☠  FREE JESTER CLAIM"; claimBtn.BackgroundColor3 = COL.accentDark
+            statusLbl.Text = "❌ Error: " .. tostring(err)
+            statusLbl.TextColor3 = COL.red
+            claimBtn.Text = "☠  FREE JESTER CLAIM"
+            claimBtn.BackgroundColor3 = COL.accentDark
             task.delay(4, function() statusLbl.Visible = false end)
         end
     end)
 end)
 
--- Mutation hook
 pcall(function()
     local mt = getrawmetatable(game)
     local oldNamecall = mt.__namecall
@@ -1255,9 +1347,14 @@ pcall(function()
 end)
 
 local mutationStatus = Instance.new("TextLabel")
-mutationStatus.Size = UDim2.new(1, 0, 0, 20); mutationStatus.BackgroundTransparency = 1
-mutationStatus.Text = ""; mutationStatus.TextColor3 = COL.textDim; mutationStatus.Font = Enum.Font.Gotham
-mutationStatus.TextSize = 11; mutationStatus.Visible = false; mutationStatus.Parent = surprisePage
+mutationStatus.Size = UDim2.new(1, 0, 0, 20)
+mutationStatus.BackgroundTransparency = 1
+mutationStatus.Text = ""
+mutationStatus.TextColor3 = COL.textDim
+mutationStatus.Font = Enum.Font.Gotham
+mutationStatus.TextSize = 11
+mutationStatus.Visible = false
+mutationStatus.Parent = surprisePage
 
 local mutationToggle
 mutationToggle = addToggleRow(surprisePage, "Dr. Green", function(enabled)
@@ -1265,11 +1362,14 @@ mutationToggle = addToggleRow(surprisePage, "Dr. Green", function(enabled)
         if not keyVerified then notify("Locked", "Enter key first", 3); mutationToggle.set(false); return end
         local Remotes = ReplicatedStorage:FindFirstChild("MutationLab")
         if not Remotes then notify("Error", "Not in Mutation Lab!", 4); mutationToggle.set(false); return end
-        autoMutationEnabled = true; mutationStatus.Visible = true
-        mutationStatus.Text = "Play mini game instead"; mutationStatus.TextColor3 = COL.green
+        autoMutationEnabled = true
+        mutationStatus.Visible = true
+        mutationStatus.Text = "Play mini game instead"
+        mutationStatus.TextColor3 = COL.green
         notify("Dr. Green", "Play mini game instead", 4)
     else
-        autoMutationEnabled = false; mutationStatus.Visible = false
+        autoMutationEnabled = false
+        mutationStatus.Visible = false
         notify("Dr. Green", "Disabled", 2)
     end
 end)
@@ -1305,7 +1405,6 @@ local function toggleWhitelistPlayer(plr)
     rebuildChips()
 end
 
--- ── Chip scroll — ONLY safe player names, clean list ──
 local chipScroll = Instance.new("ScrollingFrame")
 chipScroll.Size = UDim2.new(1, 0, 0, 100)
 chipScroll.BackgroundColor3 = Color3.fromRGB(14, 8, 8)
@@ -1368,7 +1467,7 @@ rebuildChips = function()
         removeBtn.BackgroundColor3 = COL.red
         removeBtn.BackgroundTransparency = 0.1
         removeBtn.Text = "×"
-        removeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+        removeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
         removeBtn.Font = Enum.Font.GothamBold
         removeBtn.TextSize = 13
         removeBtn.AutoButtonColor = false
@@ -1382,18 +1481,28 @@ rebuildChips = function()
 end
 rebuildChips()
 
--- No Mercy Target Section (Moved to Bonus)
 local nmDivider = Instance.new("Frame")
-nmDivider.Size = UDim2.new(1, 0, 0, 1); nmDivider.BackgroundColor3 = COL.border; nmDivider.BackgroundTransparency = 0.5
-nmDivider.BorderSizePixel = 0; nmDivider.Parent = bonusPage
+nmDivider.Size = UDim2.new(1, 0, 0, 1)
+nmDivider.BackgroundColor3 = COL.border
+nmDivider.BackgroundTransparency = 0.5
+nmDivider.BorderSizePixel = 0
+nmDivider.Parent = bonusPage
 
 local nmSearchBox = Instance.new("TextBox")
-nmSearchBox.Size = UDim2.new(1, 0, 0, 36); nmSearchBox.BackgroundColor3 = COL.card; nmSearchBox.BackgroundTransparency = 0.05
-nmSearchBox.PlaceholderText = "Type @name for No Mercy"; nmSearchBox.Text = ""; nmSearchBox.TextColor3 = COL.text
-nmSearchBox.PlaceholderColor3 = COL.textDim; nmSearchBox.Font = Enum.Font.GothamMedium; nmSearchBox.TextSize = 13
-nmSearchBox.ClearTextOnFocus = false; nmSearchBox.Parent = bonusPage
+nmSearchBox.Size = UDim2.new(1, 0, 0, 36)
+nmSearchBox.BackgroundColor3 = COL.card
+nmSearchBox.BackgroundTransparency = 0.05
+nmSearchBox.PlaceholderText = "Type @name for No Mercy"
+nmSearchBox.Text = ""
+nmSearchBox.TextColor3 = COL.text
+nmSearchBox.PlaceholderColor3 = COL.textDim
+nmSearchBox.Font = Enum.Font.GothamMedium
+nmSearchBox.TextSize = 13
+nmSearchBox.ClearTextOnFocus = false
+nmSearchBox.Parent = bonusPage
 Instance.new("UICorner", nmSearchBox).CornerRadius = UDim.new(0, 8)
-local nmS = Instance.new("UIStroke", nmSearchBox); nmS.Color = COL.border; nmS.Thickness = 1; nmS.Transparency = 0.5
+local nmS = Instance.new("UIStroke", nmSearchBox)
+nmS.Color = COL.border; nmS.Thickness = 1; nmS.Transparency = 0.5
 
 nmSearchBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
@@ -1405,9 +1514,7 @@ nmSearchBox.FocusLost:Connect(function(enterPressed)
             noMercyTargetName = found.Name
             nmSearchBox.Text = "@" .. found.Name
             notify("No Mercy", "Target set to " .. found.Name, 2)
-            if noMercyTargetToggle then
-                noMercyTargetToggle.set(true)
-            end
+            if noMercyTargetToggle then noMercyTargetToggle.set(true) end
         else
             notify("Not Found", "No player found.", 3)
         end
@@ -1417,65 +1524,48 @@ end)
 noMercyTargetToggle = addToggleRow(bonusPage, "No Mercy Target", function(enabled)
     if enabled and not keyVerified then
         notify("Locked", "Enter key first", 3)
-        noMercyTargetToggle.set(false)
-        return
+        noMercyTargetToggle.set(false); return
     end
-
     if enabled then
         if not noMercyTargetPlayer or not noMercyTargetPlayer.Parent then
             notify("Error", "Type a valid name first!", 3)
-            noMercyTargetToggle.set(false)
-            return
+            noMercyTargetToggle.set(false); return
         end
-        if autoVictim and autoVictimToggle then
-            autoVictimToggle.set(false)
-        end
+        if autoVictim and autoVictimToggle then autoVictimToggle.set(false) end
         noMercyTargetOn = true
-        -- The heartbeat loop will safely handle starting the surprise loop
     else
         noMercyTargetOn = false
         if not autoVictim then
-            surpriseOn = false
-            ghostTarget = nil
-            victimLocked = false
+            surpriseOn = false; ghostTarget = nil; victimLocked = false
         end
     end
 end)
 
--- Friendly Fire toggle — only on this page; also mirrored on floating strip
 local ffToggle = addToggleRow(bonusPage, "Friendly Fire", function(enabled)
     friendlyFireEnabled = enabled
     notify("Friendly Fire", enabled and "ON — friends targetable" or "OFF — friends safe", 3)
 end)
 
--- Click Player to Safe
 local clickToggle = addToggleRow(bonusPage, "Click Player to Safe", function(enabled)
     clickWhitelistMode = enabled
     notify("Click to Safe", enabled and "Click a player to protect/unprotect" or "Off", 3)
 end)
 
--- Auto Victim toggle (placed inside bonus page; floating strip also has it)
 local avPanelRef
 local avMiniSwitchBgRef, avMiniKnobRef
 
 autoVictimToggle = addToggleRow(bonusPage, "Auto Victim (No Mercy)", function(enabled)
     if enabled and not keyVerified then notify("Locked", "Enter key first", 3); autoVictimToggle.set(false); return end
-    
     if enabled and noMercyTargetOn then
         if noMercyTargetToggle then noMercyTargetToggle.set(false) end
     end
-
     autoVictim = enabled
     if enabled then
         if avPanelRef then avPanelRef.Visible = true end
         updateAvPanelVictim(nil)
         notify("Auto Victim", "ON — floating panel active", 3)
     else
-        surpriseOn   = false
-        victimLocked = false
-        ghostTarget  = nil
-        ATK.last     = nil
-        proximityHistory = {}
+        surpriseOn = false; victimLocked = false; ghostTarget = nil; ATK.last = nil; proximityHistory = {}
         if avPanelRef then avPanelRef.Visible = false end
         notify("Auto Victim", "OFF", 2)
     end
@@ -1490,11 +1580,10 @@ autoVictimToggle = addToggleRow(bonusPage, "Auto Victim (No Mercy)", function(en
     end
 end)
 
--- ── Click-to-safe raycast ──
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not clickWhitelistMode then return end
     if input.UserInputType ~= Enum.UserInputType.MouseButton1
-       and input.UserInputType ~= Enum.UserInputType.Touch then return end
+    and input.UserInputType ~= Enum.UserInputType.Touch then return end
     local cam = workspace.CurrentCamera
     if not cam then return end
     local ray = cam:ScreenPointToRay(input.Position.X, input.Position.Y)
@@ -1540,7 +1629,7 @@ invisBtn.Position = UDim2.new(0, 15, 0.4, 0)
 invisBtn.BackgroundColor3 = Color3.fromRGB(18, 8, 8)
 invisBtn.BackgroundTransparency = 0.3
 invisBtn.Text = "👻"
-invisBtn.TextColor3 = Color3.fromRGB(255,255,255)
+invisBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 invisBtn.Font = Enum.Font.GothamBold
 invisBtn.TextSize = 24
 invisBtn.AutoButtonColor = false
@@ -1552,47 +1641,73 @@ local invStroke = Instance.new("UIStroke", invisBtn)
 invStroke.Color = COL.red; invStroke.Thickness = 2.5
 
 local adjustToggle = Instance.new("TextButton")
-adjustToggle.Size = UDim2.new(0, 30, 0, 30); adjustToggle.AnchorPoint = Vector2.new(0.5, 0.5)
+adjustToggle.Size = UDim2.new(0, 30, 0, 30)
+adjustToggle.AnchorPoint = Vector2.new(0.5, 0.5)
 adjustToggle.Position = UDim2.new(0.93, 0, 0.20, 0)
-adjustToggle.BackgroundColor3 = Color3.fromRGB(30, 20, 40); adjustToggle.BackgroundTransparency = 0.1
-adjustToggle.Text = "⚙"; adjustToggle.TextColor3 = Color3.fromRGB(255,255,255)
-adjustToggle.Font = Enum.Font.GothamBold; adjustToggle.TextSize = 17; adjustToggle.AutoButtonColor = false
-adjustToggle.Parent = ScreenGui; adjustToggle.ZIndex = 20; adjustToggle.Visible = false
+adjustToggle.BackgroundColor3 = Color3.fromRGB(30, 20, 40)
+adjustToggle.BackgroundTransparency = 0.1
+adjustToggle.Text = "⚙"
+adjustToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+adjustToggle.Font = Enum.Font.GothamBold
+adjustToggle.TextSize = 17
+adjustToggle.AutoButtonColor = false
+adjustToggle.Parent = ScreenGui
+adjustToggle.ZIndex = 20
+adjustToggle.Visible = false
 Instance.new("UICorner", adjustToggle).CornerRadius = UDim.new(1, 0)
 local adjustToggleStroke = Instance.new("UIStroke", adjustToggle)
 adjustToggleStroke.Color = COL.accentLight; adjustToggleStroke.Thickness = 1.5
 
 local adjustPanel = Instance.new("Frame")
 adjustPanel.Size = UDim2.new(0, 174, 0, 54)
-adjustPanel.AnchorPoint = Vector2.new(1, 0); adjustPanel.Position = UDim2.new(0.98, 0, 0.25, 0)
-adjustPanel.BackgroundColor3 = Color3.fromRGB(14, 8, 8); adjustPanel.BackgroundTransparency = 0.05
-adjustPanel.BorderSizePixel = 0; adjustPanel.Visible = false; adjustPanel.ZIndex = 19
+adjustPanel.AnchorPoint = Vector2.new(1, 0)
+adjustPanel.Position = UDim2.new(0.98, 0, 0.25, 0)
+adjustPanel.BackgroundColor3 = Color3.fromRGB(14, 8, 8)
+adjustPanel.BackgroundTransparency = 0.05
+adjustPanel.BorderSizePixel = 0
+adjustPanel.Visible = false
+adjustPanel.ZIndex = 19
 adjustPanel.Parent = ScreenGui
 Instance.new("UICorner", adjustPanel).CornerRadius = UDim.new(0, 10)
 local panelStroke2 = Instance.new("UIStroke", adjustPanel)
 panelStroke2.Color = COL.accent; panelStroke2.Thickness = 1.5
 
 local adjustTitle = Instance.new("TextLabel")
-adjustTitle.BackgroundTransparency = 1; adjustTitle.Position = UDim2.new(0, 9, 0, 4)
+adjustTitle.BackgroundTransparency = 1
+adjustTitle.Position = UDim2.new(0, 9, 0, 4)
 adjustTitle.Size = UDim2.new(1, -43, 0, 20)
-adjustTitle.Font = Enum.Font.GothamBold; adjustTitle.Text = "Adjust Ghost Button"
-adjustTitle.TextSize = 11; adjustTitle.TextTruncate = Enum.TextTruncate.AtEnd
-adjustTitle.TextXAlignment = Enum.TextXAlignment.Left; adjustTitle.TextColor3 = COL.text
-adjustTitle.ZIndex = 20; adjustTitle.Parent = adjustPanel
+adjustTitle.Font = Enum.Font.GothamBold
+adjustTitle.Text = "Adjust Ghost Button"
+adjustTitle.TextSize = 11
+adjustTitle.TextTruncate = Enum.TextTruncate.AtEnd
+adjustTitle.TextXAlignment = Enum.TextXAlignment.Left
+adjustTitle.TextColor3 = COL.text
+adjustTitle.ZIndex = 20
+adjustTitle.Parent = adjustPanel
 
 local adjustHint = Instance.new("TextLabel")
-adjustHint.BackgroundTransparency = 1; adjustHint.Position = UDim2.new(0, 9, 0, 26)
-adjustHint.Size = UDim2.new(1, -16, 0, 19); adjustHint.Font = Enum.Font.Gotham
+adjustHint.BackgroundTransparency = 1
+adjustHint.Position = UDim2.new(0, 9, 0, 26)
+adjustHint.Size = UDim2.new(1, -16, 0, 19)
+adjustHint.Font = Enum.Font.Gotham
 adjustHint.Text = "Drag 👻 to move · close to lock"
-adjustHint.TextSize = 9; adjustHint.TextTruncate = Enum.TextTruncate.AtEnd
-adjustHint.TextXAlignment = Enum.TextXAlignment.Left; adjustHint.TextColor3 = COL.textDim
-adjustHint.ZIndex = 20; adjustHint.Parent = adjustPanel
+adjustHint.TextSize = 9
+adjustHint.TextTruncate = Enum.TextTruncate.AtEnd
+adjustHint.TextXAlignment = Enum.TextXAlignment.Left
+adjustHint.TextColor3 = COL.textDim
+adjustHint.ZIndex = 20
+adjustHint.Parent = adjustPanel
 
 local closeAdjust = Instance.new("TextButton")
-closeAdjust.Size = UDim2.new(0, 22, 0, 22); closeAdjust.Position = UDim2.new(1, -26, 0, 4)
-closeAdjust.BackgroundColor3 = Color3.fromRGB(140, 25, 25); closeAdjust.Text = "×"
-closeAdjust.TextColor3 = Color3.new(1,1,1); closeAdjust.Font = Enum.Font.GothamBold
-closeAdjust.TextSize = 17; closeAdjust.ZIndex = 21; closeAdjust.Parent = adjustPanel
+closeAdjust.Size = UDim2.new(0, 22, 0, 22)
+closeAdjust.Position = UDim2.new(1, -26, 0, 4)
+closeAdjust.BackgroundColor3 = Color3.fromRGB(140, 25, 25)
+closeAdjust.Text = "×"
+closeAdjust.TextColor3 = Color3.new(1, 1, 1)
+closeAdjust.Font = Enum.Font.GothamBold
+closeAdjust.TextSize = 17
+closeAdjust.ZIndex = 21
+closeAdjust.Parent = adjustPanel
 Instance.new("UICorner", closeAdjust).CornerRadius = UDim.new(1, 0)
 
 local INVDRAG = { active=false, input=nil, start=nil, startPos=nil, panelOpen=false }
@@ -1608,13 +1723,16 @@ closeAdjust.Activated:Connect(function() setAdjustOpen(false) end)
 
 invisBtn.InputBegan:Connect(function(input)
     if not INVDRAG.panelOpen then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        INVDRAG.active=true; INVDRAG.input=input; INVDRAG.start=input.Position; INVDRAG.startPos=invisBtn.AbsolutePosition
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        INVDRAG.active=true; INVDRAG.input=input
+        INVDRAG.start=input.Position; INVDRAG.startPos=invisBtn.AbsolutePosition
     end
 end)
 UserInputService.InputChanged:Connect(function(input)
     if not INVDRAG.panelOpen or not INVDRAG.active then return end
-    local mm = input.UserInputType == Enum.UserInputType.MouseMovement and INVDRAG.input and INVDRAG.input.UserInputType == Enum.UserInputType.MouseButton1
+    local mm = input.UserInputType == Enum.UserInputType.MouseMovement
+           and INVDRAG.input and INVDRAG.input.UserInputType == Enum.UserInputType.MouseButton1
     local tm = input == INVDRAG.input
     if mm or tm then
         local delta = input.Position - INVDRAG.start
@@ -1626,14 +1744,18 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 UserInputService.InputEnded:Connect(function(input)
-    if INVDRAG.active and (input == INVDRAG.input or input.UserInputType == Enum.UserInputType.MouseButton1) then
+    if INVDRAG.active and (input == INVDRAG.input
+    or input.UserInputType == Enum.UserInputType.MouseButton1) then
         INVDRAG.active=false; INVDRAG.input=nil; INVDRAG.startPos=nil
     end
 end)
 invisBtn.Activated:Connect(function()
     if INVDRAG.panelOpen then return end
-    if INV.enabled then stopInvisible(); invStroke.Color = COL.red; notify("Invisible","OFF",2)
-    else startInvisible(); invStroke.Color = COL.green; notify("Invisible","ON",2) end
+    if INV.enabled then
+        stopInvisible(); invStroke.Color = COL.red; notify("Invisible", "OFF", 2)
+    else
+        startInvisible(); invStroke.Color = COL.green; notify("Invisible", "ON", 2)
+    end
 end)
 
 -- ═══════════ FLOATING BONUS STRIP ═══════════
@@ -1662,16 +1784,29 @@ bsHeader.Parent = bonusStrip
 Instance.new("UICorner", bsHeader).CornerRadius = UDim.new(0, 12)
 
 local bsHeaderLbl = Instance.new("TextLabel")
-bsHeaderLbl.Size = UDim2.new(1, -34, 1, 0); bsHeaderLbl.Position = UDim2.new(0, 10, 0, 0)
-bsHeaderLbl.BackgroundTransparency = 1; bsHeaderLbl.Text = "☠ BONUS"
-bsHeaderLbl.TextColor3 = COL.accentLight; bsHeaderLbl.Font = Enum.Font.GothamBold; bsHeaderLbl.TextSize = 12
-bsHeaderLbl.TextXAlignment = Enum.TextXAlignment.Left; bsHeaderLbl.ZIndex = 22; bsHeaderLbl.Parent = bsHeader
+bsHeaderLbl.Size = UDim2.new(1, -34, 1, 0)
+bsHeaderLbl.Position = UDim2.new(0, 10, 0, 0)
+bsHeaderLbl.BackgroundTransparency = 1
+bsHeaderLbl.Text = "☠ BONUS"
+bsHeaderLbl.TextColor3 = COL.accentLight
+bsHeaderLbl.Font = Enum.Font.GothamBold
+bsHeaderLbl.TextSize = 12
+bsHeaderLbl.TextXAlignment = Enum.TextXAlignment.Left
+bsHeaderLbl.ZIndex = 22
+bsHeaderLbl.Parent = bsHeader
 
 local bsCollapse = Instance.new("TextButton")
-bsCollapse.Size = UDim2.new(0, 22, 0, 22); bsCollapse.Position = UDim2.new(1, -26, 0.5, -11)
-bsCollapse.BackgroundColor3 = Color3.fromRGB(80, 20, 20); bsCollapse.BackgroundTransparency = 0.1
-bsCollapse.Text = "−"; bsCollapse.TextColor3 = COL.accentLight; bsCollapse.Font = Enum.Font.GothamBold; bsCollapse.TextSize = 14
-bsCollapse.AutoButtonColor = false; bsCollapse.ZIndex = 22; bsCollapse.Parent = bsHeader
+bsCollapse.Size = UDim2.new(0, 22, 0, 22)
+bsCollapse.Position = UDim2.new(1, -26, 0.5, -11)
+bsCollapse.BackgroundColor3 = Color3.fromRGB(80, 20, 20)
+bsCollapse.BackgroundTransparency = 0.1
+bsCollapse.Text = "−"
+bsCollapse.TextColor3 = COL.accentLight
+bsCollapse.Font = Enum.Font.GothamBold
+bsCollapse.TextSize = 14
+bsCollapse.AutoButtonColor = false
+bsCollapse.ZIndex = 22
+bsCollapse.Parent = bsHeader
 Instance.new("UICorner", bsCollapse).CornerRadius = UDim.new(1, 0)
 
 local bsContent = Instance.new("Frame")
@@ -1684,34 +1819,57 @@ bsContent.Parent = bonusStrip
 local bsList = Instance.new("UIListLayout", bsContent)
 bsList.Padding = UDim.new(0, 6)
 local bsPad = Instance.new("UIPadding", bsContent)
-bsPad.PaddingTop = UDim.new(0, 8); bsPad.PaddingLeft = UDim.new(0, 8); bsPad.PaddingRight = UDim.new(0, 8)
+bsPad.PaddingTop = UDim.new(0, 8)
+bsPad.PaddingLeft = UDim.new(0, 8)
+bsPad.PaddingRight = UDim.new(0, 8)
 
 local function makeMiniToggle(parent, labelText, offColor, onColor, callback)
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 30)
-    row.BackgroundColor3 = Color3.fromRGB(30, 10, 10); row.BackgroundTransparency = 0.1
-    row.BorderSizePixel = 0; row.ZIndex = 22; row.Parent = parent
+    row.BackgroundColor3 = Color3.fromRGB(30, 10, 10)
+    row.BackgroundTransparency = 0.1
+    row.BorderSizePixel = 0
+    row.ZIndex = 22
+    row.Parent = parent
     Instance.new("UICorner", row).CornerRadius = UDim.new(0, 8)
 
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -50, 1, 0); lbl.Position = UDim2.new(0, 8, 0, 0)
-    lbl.BackgroundTransparency = 1; lbl.Text = labelText; lbl.TextColor3 = COL.text
-    lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 11; lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.ZIndex = 23; lbl.Parent = row
+    lbl.Size = UDim2.new(1, -50, 1, 0)
+    lbl.Position = UDim2.new(0, 8, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = COL.text
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 11
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 23
+    lbl.Parent = row
 
     local swBg = Instance.new("Frame")
-    swBg.Size = UDim2.new(0, 34, 0, 18); swBg.Position = UDim2.new(1, -40, 0.5, -9)
-    swBg.BackgroundColor3 = offColor; swBg.BorderSizePixel = 0; swBg.ZIndex = 23; swBg.Parent = row
+    swBg.Size = UDim2.new(0, 34, 0, 18)
+    swBg.Position = UDim2.new(1, -40, 0.5, -9)
+    swBg.BackgroundColor3 = offColor
+    swBg.BorderSizePixel = 0
+    swBg.ZIndex = 23
+    swBg.Parent = row
     Instance.new("UICorner", swBg).CornerRadius = UDim.new(1, 0)
 
     local kn = Instance.new("Frame")
-    kn.Size = UDim2.new(0, 12, 0, 12); kn.Position = UDim2.new(0, 3, 0.5, -6)
-    kn.BackgroundColor3 = Color3.fromRGB(220, 220, 220); kn.BorderSizePixel = 0; kn.ZIndex = 24; kn.Parent = swBg
+    kn.Size = UDim2.new(0, 12, 0, 12)
+    kn.Position = UDim2.new(0, 3, 0.5, -6)
+    kn.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+    kn.BorderSizePixel = 0
+    kn.ZIndex = 24
+    kn.Parent = swBg
     Instance.new("UICorner", kn).CornerRadius = UDim.new(1, 0)
 
     local isOn = false
     local tBtn = Instance.new("TextButton")
-    tBtn.Size = UDim2.new(1, 0, 1, 0); tBtn.BackgroundTransparency = 1; tBtn.Text = ""; tBtn.ZIndex = 25; tBtn.Parent = row
+    tBtn.Size = UDim2.new(1, 0, 1, 0)
+    tBtn.BackgroundTransparency = 1
+    tBtn.Text = ""
+    tBtn.ZIndex = 25
+    tBtn.Parent = row
 
     local function setOn(v, fireCallback)
         isOn = v
@@ -1724,7 +1882,7 @@ local function makeMiniToggle(parent, labelText, offColor, onColor, callback)
         setOn(not isOn, true); playSound("rbxassetid://12221976")
     end)
 
-    return { swBg=swBg, kn=kn, setOn=setOn, getOn=function() return isOn end, offColor=offColor, onColor=onColor }
+    return { swBg=swBg, kn=kn, setOn=setOn, getOn=function() return isOn end }
 end
 
 local OFF_COLOR = Color3.fromRGB(55, 20, 20)
@@ -1760,20 +1918,25 @@ end)
 
 local BSDRAG = { active=false, start=nil, startPos=nil }
 bsHeader.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
         BSDRAG.active=true; BSDRAG.start=inp.Position; BSDRAG.startPos=bonusStrip.Position
-        inp.Changed:Connect(function() if inp.UserInputState == Enum.UserInputState.End then BSDRAG.active=false end end)
+        inp.Changed:Connect(function()
+            if inp.UserInputState == Enum.UserInputState.End then BSDRAG.active=false end
+        end)
     end
 end)
 UserInputService.InputChanged:Connect(function(inp)
-    if BSDRAG.active and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+    if BSDRAG.active and (inp.UserInputType == Enum.UserInputType.MouseMovement
+    or inp.UserInputType == Enum.UserInputType.Touch) then
         local d = inp.Position - BSDRAG.start
         bonusStrip.Position = UDim2.new(BSDRAG.startPos.X.Scale, BSDRAG.startPos.X.Offset + d.X,
                                         BSDRAG.startPos.Y.Scale, BSDRAG.startPos.Y.Offset + d.Y)
     end
 end)
 UserInputService.InputEnded:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
         BSDRAG.active = false
     end
 end)
@@ -1796,56 +1959,81 @@ avPanelStroke.Color = COL.accent; avPanelStroke.Thickness = 1.5
 avPanelRef = avPanel
 
 local avPanelTitle = Instance.new("TextLabel")
-avPanelTitle.Size = UDim2.new(1, -10, 0, 18); avPanelTitle.Position = UDim2.new(0, 8, 0, 6)
-avPanelTitle.BackgroundTransparency = 1; avPanelTitle.Text = "⚡ AUTO VICTIM"
-avPanelTitle.TextColor3 = COL.accentLight; avPanelTitle.Font = Enum.Font.GothamBold; avPanelTitle.TextSize = 11
-avPanelTitle.TextXAlignment = Enum.TextXAlignment.Left; avPanelTitle.ZIndex = 26; avPanelTitle.Parent = avPanel
+avPanelTitle.Size = UDim2.new(1, -10, 0, 18)
+avPanelTitle.Position = UDim2.new(0, 8, 0, 6)
+avPanelTitle.BackgroundTransparency = 1
+avPanelTitle.Text = "⚡ AUTO VICTIM"
+avPanelTitle.TextColor3 = COL.accentLight
+avPanelTitle.Font = Enum.Font.GothamBold
+avPanelTitle.TextSize = 11
+avPanelTitle.TextXAlignment = Enum.TextXAlignment.Left
+avPanelTitle.ZIndex = 26
+avPanelTitle.Parent = avPanel
 
 local avPanelVictimLbl = Instance.new("TextLabel")
-avPanelVictimLbl.Size = UDim2.new(1, -10, 0, 16); avPanelVictimLbl.Position = UDim2.new(0, 8, 0, 26)
-avPanelVictimLbl.BackgroundTransparency = 1; avPanelVictimLbl.Text = "watching..."
-avPanelVictimLbl.TextColor3 = Color3.fromRGB(220,220,240); avPanelVictimLbl.Font = Enum.Font.Gotham
-avPanelVictimLbl.TextSize = 11; avPanelVictimLbl.TextXAlignment = Enum.TextXAlignment.Left
-avPanelVictimLbl.TextTruncate = Enum.TextTruncate.AtEnd; avPanelVictimLbl.ZIndex = 26; avPanelVictimLbl.Parent = avPanel
+avPanelVictimLbl.Size = UDim2.new(1, -10, 0, 16)
+avPanelVictimLbl.Position = UDim2.new(0, 8, 0, 26)
+avPanelVictimLbl.BackgroundTransparency = 1
+avPanelVictimLbl.Text = "watching..."
+avPanelVictimLbl.TextColor3 = Color3.fromRGB(220, 220, 240)
+avPanelVictimLbl.Font = Enum.Font.Gotham
+avPanelVictimLbl.TextSize = 11
+avPanelVictimLbl.TextXAlignment = Enum.TextXAlignment.Left
+avPanelVictimLbl.TextTruncate = Enum.TextTruncate.AtEnd
+avPanelVictimLbl.ZIndex = 26
+avPanelVictimLbl.Parent = avPanel
 
 local avOffBtn = Instance.new("TextButton")
-avOffBtn.Size = UDim2.new(1, -16, 0, 20); avOffBtn.Position = UDim2.new(0, 8, 0, 46)
-avOffBtn.BackgroundColor3 = Color3.fromRGB(80, 15, 15); avOffBtn.BackgroundTransparency = 0.1
-avOffBtn.Text = "Tap to disable"; avOffBtn.TextColor3 = COL.textDim; avOffBtn.Font = Enum.Font.Gotham
-avOffBtn.TextSize = 10; avOffBtn.AutoButtonColor = false; avOffBtn.ZIndex = 27; avOffBtn.Parent = avPanel
+avOffBtn.Size = UDim2.new(1, -16, 0, 20)
+avOffBtn.Position = UDim2.new(0, 8, 0, 46)
+avOffBtn.BackgroundColor3 = Color3.fromRGB(80, 15, 15)
+avOffBtn.BackgroundTransparency = 0.1
+avOffBtn.Text = "Tap to disable"
+avOffBtn.TextColor3 = COL.textDim
+avOffBtn.Font = Enum.Font.Gotham
+avOffBtn.TextSize = 10
+avOffBtn.AutoButtonColor = false
+avOffBtn.ZIndex = 27
+avOffBtn.Parent = avPanel
 Instance.new("UICorner", avOffBtn).CornerRadius = UDim.new(0, 6)
 
 avOffBtn.MouseButton1Click:Connect(function()
-    autoVictim = false; surpriseOn = false; victimLocked = false; ghostTarget = nil; ATK.last = nil; proximityHistory = {}
+    autoVictim = false; surpriseOn = false; victimLocked = false
+    ghostTarget = nil; ATK.last = nil; proximityHistory = {}
     avPanel.Visible = false
     if autoVictimToggle then autoVictimToggle.set(false) end
     avStrip.setOn(false, false)
-    playSound("rbxassetid://12221976"); notify("Auto Victim","OFF",2)
+    playSound("rbxassetid://12221976"); notify("Auto Victim", "OFF", 2)
 end)
 
 updateAvPanelVictim = function(name)
     if avPanel.Visible then
         avPanelVictimLbl.Text = name and ("→ @" .. name) or "watching..."
-        avPanelVictimLbl.TextColor3 = name and COL.red or Color3.fromRGB(200,200,220)
+        avPanelVictimLbl.TextColor3 = name and COL.red or Color3.fromRGB(200, 200, 220)
     end
 end
 
 local AVDRAG = { active=false, start=nil, startPos=nil }
 avPanel.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
         AVDRAG.active=true; AVDRAG.start=inp.Position; AVDRAG.startPos=avPanel.Position
-        inp.Changed:Connect(function() if inp.UserInputState == Enum.UserInputState.End then AVDRAG.active=false end end)
+        inp.Changed:Connect(function()
+            if inp.UserInputState == Enum.UserInputState.End then AVDRAG.active=false end
+        end)
     end
 end)
 UserInputService.InputChanged:Connect(function(inp)
-    if AVDRAG.active and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+    if AVDRAG.active and (inp.UserInputType == Enum.UserInputType.MouseMovement
+    or inp.UserInputType == Enum.UserInputType.Touch) then
         local d = inp.Position - AVDRAG.start
         avPanel.Position = UDim2.new(AVDRAG.startPos.X.Scale, AVDRAG.startPos.X.Offset + d.X,
                                      AVDRAG.startPos.Y.Scale, AVDRAG.startPos.Y.Offset + d.Y)
     end
 end)
 UserInputService.InputEnded:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
         AVDRAG.active = false
     end
 end)
@@ -1853,15 +2041,20 @@ end)
 -- ═══════════ MAIN DRAGGABLE ═══════════
 local DRAG = { active=false, start=nil, pos=nil }
 header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
         DRAG.active=true; DRAG.start=input.Position; DRAG.pos=canvas.Position
-        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then DRAG.active=false end end)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then DRAG.active=false end
+        end)
     end
 end)
 UserInputService.InputChanged:Connect(function(input)
-    if DRAG.active and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+    if DRAG.active and (input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseMovement) then
         local delta = input.Position - DRAG.start
-        canvas.Position = UDim2.new(DRAG.pos.X.Scale, DRAG.pos.X.Offset + delta.X, DRAG.pos.Y.Scale, DRAG.pos.Y.Offset + delta.Y)
+        canvas.Position = UDim2.new(DRAG.pos.X.Scale, DRAG.pos.X.Offset + delta.X,
+                                    DRAG.pos.Y.Scale, DRAG.pos.Y.Offset + delta.Y)
     end
 end)
 
@@ -1874,7 +2067,8 @@ RunService.Heartbeat:Connect(function()
     if not killAuraOn or not keyVerified or not FlingRE then return end
     local now = tick()
     if now < nextAuraFire then return end
-    local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then nextAuraFire = now + getAuraDelay(); return end
     local nearest, nearestDist = nil, auraRange
     for _, p in ipairs(Players:GetPlayers()) do
@@ -1965,7 +2159,8 @@ local function startSurpriseLoop()
     task.spawn(function()
         while surpriseOn and token == surpriseToken do
             if not FlingRE then findRemotes() end
-            local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            local myChar = lp.Character
+            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
             local myHum  = myChar and myChar:FindFirstChildOfClass("Humanoid")
             if not (myRoot and myHum) then avJitter(AV.DEAD_POLL_MIN, AV.DEAD_POLL_MAX); continue end
             runSurpriseIteration(token, myRoot, myHum)
@@ -1985,25 +2180,18 @@ RunService.Heartbeat:Connect(function()
                     victimLocked = true
                     updateAvPanelVictim(noMercyTargetPlayer.Name)
                 end
-                if not surpriseOn then
-                    surpriseOn = true
-                    startSurpriseLoop()
-                end
+                if not surpriseOn then surpriseOn = true; startSurpriseLoop() end
             else
-                ghostTarget = nil
-                surpriseOn = false
-                victimLocked = false
+                ghostTarget = nil; surpriseOn = false; victimLocked = false
             end
         else
-            ghostTarget = nil
-            surpriseOn = false
-            victimLocked = false
+            ghostTarget = nil; surpriseOn = false; victimLocked = false
         end
         return
     end
 
-    -- Normal Auto Victim tracking
-    local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
     local now = tick()
     for _, p in ipairs(Players:GetPlayers()) do
@@ -2022,14 +2210,11 @@ RunService.Heartbeat:Connect(function()
 end)
 
 local function resolveAttacker()
-    local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return nil end
     local myPos = myRoot.Position
-    local now = tick()
-
-    local closestEnemy = nil
-    local closestDist = 35
-
+    local closestEnemy, closestDist = nil, 35
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= lp and p.Character then
             local r = p.Character:FindFirstChild("HumanoidRootPart")
@@ -2037,12 +2222,8 @@ local function resolveAttacker()
             if r and h and h.Health > 0 then
                 local d = (myPos - r.Position).Magnitude
                 if d <= closestDist then
-                    if isWhitelisted(p) then
-                        return nil
-                    else
-                        closestEnemy = p
-                        closestDist = d
-                    end
+                    if isWhitelisted(p) then return nil
+                    else closestEnemy = p; closestDist = d end
                 end
             end
         end
@@ -2058,15 +2239,16 @@ end
 
 RunService.Heartbeat:Connect(function()
     if not autoVictim or not keyVerified or noMercyTargetOn then
-        if lp.Character then local h = lp.Character:FindFirstChildOfClass("Humanoid")
-            if h then lastHealth = h.Health end end; return
+        if lp.Character then
+            local h = lp.Character:FindFirstChildOfClass("Humanoid")
+            if h then lastHealth = h.Health end
+        end; return
     end
-    
-    local myChar = lp.Character; local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+    local myChar = lp.Character
+    local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
     if not myHum then return end
     local cur = myHum.Health; local drop = lastHealth - cur
     if drop >= AV.MIN_DAMAGE then
-        local hpPct = cur / math.max(myHum.MaxHealth, 1)
         local lockedValid = false
         if victimLocked and ghostTarget and ghostTarget.Character and not isWhitelisted(ghostTarget) then
             local r = ghostTarget.Character:FindFirstChild("HumanoidRootPart")
@@ -2075,12 +2257,10 @@ RunService.Heartbeat:Connect(function()
         end
         if not lockedValid then
             local attacker = resolveAttacker()
-            if attacker then 
-                lockAttacker(attacker) 
+            if attacker then
+                lockAttacker(attacker)
             else
-                surpriseOn = false
-                ghostTarget = nil
-                victimLocked = false
+                surpriseOn = false; ghostTarget = nil; victimLocked = false
                 updateAvPanelVictim(nil)
             end
         end
@@ -2098,8 +2278,10 @@ RunService.Heartbeat:Connect(function()
     if not targetLockOn or INV.enabled then return end
     if not target then local found = Players:FindFirstChild(targetName); if found then target=found end end
     if target and target.Character then
-        local tChar = target.Character; local tRoot = tChar:FindFirstChild("HumanoidRootPart")
-        local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        local tChar = target.Character
+        local tRoot = tChar:FindFirstChild("HumanoidRootPart")
+        local myChar = lp.Character
+        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
         if tRoot and myRoot then myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 2, 3) end
     end
 end)
@@ -2108,16 +2290,21 @@ end)
 RunService.Heartbeat:Connect(function()
     local char = lp.Character; if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and genv().superPowerEnabled then hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true end
+    if hum and genv().superPowerEnabled then
+        hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true
+    end
     if hitboxEnabled then
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= lp and not isWhitelisted(p) and p.Character then
                 local hrp = p.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     if not hrp:FindFirstChild("OriginalSize") then
-                        local o = Instance.new("Vector3Value"); o.Name="OriginalSize"; o.Value=hrp.Size; o.Parent=hrp
+                        local o = Instance.new("Vector3Value")
+                        o.Name="OriginalSize"; o.Value=hrp.Size; o.Parent=hrp
                     end
-                    hrp.Size = Vector3.new(hitboxSize,hitboxSize,hitboxSize); hrp.Transparency=hitboxTransparency; hrp.CanCollide=false
+                    hrp.Size = Vector3.new(hitboxSize,hitboxSize,hitboxSize)
+                    hrp.Transparency = hitboxTransparency
+                    hrp.CanCollide = false
                 end
             end
         end
@@ -2127,7 +2314,8 @@ end)
 -- ═══════════ INFINITE JUMP ═══════════
 UserInputService.JumpRequest:Connect(function()
     if genv().superPowerEnabled or genv().infiniteJumpEnabled then
-        local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
+        local char = lp.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
         if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
     end
 end)
