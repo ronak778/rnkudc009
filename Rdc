@@ -1,4 +1,4 @@
--- ═══════════ UNDOCALL'S HUB v7 — No MERCY ═══════════
+-- ═══════════ UNDOCALL'S HUB v7 — NO MERCY ═══════════
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -9,6 +9,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local lp = Players.LocalPlayer
 while not lp do task.wait() lp = Players.LocalPlayer end
+
+local genv = getgenv or function() return _G end
 
 local ARENA_TELEPORT = Vector3.new(-760, 14, 2040)
 
@@ -153,8 +155,8 @@ local function avJitter(a, b) task.wait(avRnd(a, b)) end
 local updateAvPanelVictim = function(_name) end
 local autoVictimToggle
 
-getgenv().superPowerEnabled = false
-getgenv().infiniteJumpEnabled = false
+genv().superPowerEnabled = false
+genv().infiniteJumpEnabled = false
 
 local ALL_STATES = {
     Enum.HumanoidStateType.Climbing, Enum.HumanoidStateType.FallingDown,
@@ -652,7 +654,7 @@ local reopenLogo = Instance.new("ImageLabel")
 reopenLogo.Size = UDim2.new(0, 32, 0, 32)
 reopenLogo.Position = UDim2.new(0.5, -16, 0.5, -16)
 reopenLogo.BackgroundTransparency = 1
-reopenLogo.Image = "rbxassetid://74028505342590"
+reopenLogo.Image = "rbxassetid://78841768689548"
 reopenLogo.ScaleType = Enum.ScaleType.Fit
 reopenLogo.Parent = reopenBtn
 
@@ -1155,18 +1157,24 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 addToggleRow(movePage, "Super Power", function(enabled)
-    getgenv().superPowerEnabled = enabled
+    genv().superPowerEnabled = enabled
     if not enabled then local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
         if hum then hum.WalkSpeed = 16; hum.JumpPower = 50 end end
 end)
-addToggleRow(movePage, "Infinite Jump", function(enabled) getgenv().infiniteJumpEnabled = enabled end)
+addToggleRow(movePage, "Infinite Jump", function(enabled) genv().infiniteJumpEnabled = enabled end)
 
 -- ═══════════ MISC PAGE ═══════════
 local miscPage = addPage("Misc")
 addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol"))()
+    pcall(function()
+        local code = game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol")
+        if code then
+            local chunk = loadstring(code)
+            if chunk then chunk() end
+        end
+    end)
 end)
 
 -- ═══════════ SURPRISE PAGE ═══════════
@@ -2100,7 +2108,7 @@ end)
 RunService.Heartbeat:Connect(function()
     local char = lp.Character; if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and getgenv().superPowerEnabled then hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true end
+    if hum and genv().superPowerEnabled then hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true end
     if hitboxEnabled then
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= lp and not isWhitelisted(p) and p.Character then
@@ -2118,7 +2126,7 @@ end)
 
 -- ═══════════ INFINITE JUMP ═══════════
 UserInputService.JumpRequest:Connect(function()
-    if getgenv().superPowerEnabled or getgenv().infiniteJumpEnabled then
+    if genv().superPowerEnabled or genv().infiniteJumpEnabled then
         local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
         if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
     end
