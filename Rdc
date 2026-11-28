@@ -123,26 +123,26 @@ local noMercyTargetName = ""
 local noMercyTargetToggle
 
 local AV = {
-    COMBAT_RANGE       = 14,
-    HITS_MIN           = 2,
-    HITS_MAX           = 3,
-    HIT_GAP_MIN        = 0.12,
-    HIT_GAP_MAX        = 0.22,
-    CYCLE_YIELD_MIN    = 0.15,
-    CYCLE_YIELD_MAX    = 0.30,
-    DEAD_POLL_MIN      = 0.02,
-    DEAD_POLL_MAX      = 0.05,
-    REPOSITION_MIN     = 0.03,
-    REPOSITION_MAX     = 0.07,
+    COMBAT_RANGE       = 25,     -- Increased from 14 (snipes from further away)
+    HITS_MIN           = 4,      -- Increased from 2
+    HITS_MAX           = 7,      -- Increased from 3 (absolute barrage)
+    HIT_GAP_MIN        = 0.02,   -- Decreased from 0.12 (almost instant hits)
+    HIT_GAP_MAX        = 0.05,   -- Decreased from 0.22
+    CYCLE_YIELD_MIN    = 0.02,   -- Decreased from 0.15 (almost no downtime)
+    CYCLE_YIELD_MAX    = 0.05,   -- Decreased from 0.30
+    DEAD_POLL_MIN      = 0.01,   -- Switches to next target instantly
+    DEAD_POLL_MAX      = 0.02,
+    REPOSITION_MIN     = 0.01,   -- Snaps to target faster
+    REPOSITION_MAX     = 0.02,
     NEAR_RADIUS        = 500,
     MIN_DAMAGE         = 1,
     ATTACKER_CACHE_TTL = 10,
     RECENT_NEAR_WINDOW = 5.0,
     RECENT_NEAR_DIST   = 100,
-    DEFENSIVE_HP_GATE  = 0.79,
-    SPAWNER_HP_TRIGGER = 0.75,
-    SPAWNER_MIN        = 0.8,
-    SPAWNER_MAX        = 0.80,
+    DEFENSIVE_HP_GATE  = 0.99,   -- Triggers god mode spawner instantly on any HP drop
+    SPAWNER_HP_TRIGGER = 0.99,
+    SPAWNER_MIN        = 0.05,   -- Spams SpawnerRemote (since you said it's safe)
+    SPAWNER_MAX        = 0.10,
 }
 
 local ATK = { last=nil, time=0 }
@@ -1818,7 +1818,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- ═══════════ KILL AURA LOOP ═══════════
-local AURA = { lastHit=0, minDelay=0.5, maxDelay=1.5, lastTarget=nil }
+local AURA = { lastHit=0, minDelay=0.1, maxDelay=0.3, lastTarget=nil }
 local function getAuraDelay() return AURA.minDelay + math.random() * (AURA.maxDelay - AURA.minDelay) end
 local nextAuraFire = tick() + getAuraDelay()
 
@@ -2062,7 +2062,7 @@ end)
 RunService.Heartbeat:Connect(function()
     local char = lp.Character; if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and getgenv().superPowerEnabled then hum.WalkSpeed=120; hum.JumpPower=150; hum.UseJumpPower=true end
+    if hum and genv().superPowerEnabled then hum.WalkSpeed=75; hum.JumpPower=100; hum.UseJumpPower=true end
     if hitboxEnabled then
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= lp and not isWhitelisted(p) and p.Character then
