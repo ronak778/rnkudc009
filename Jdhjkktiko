@@ -1,0 +1,389 @@
+-- Services
+local StarterGui = game:GetService("StarterGui")
+local Players    = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui    = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Player
+local localPlayer = Players.LocalPlayer
+while not localPlayer do
+    task.wait()
+    localPlayer = Players.LocalPlayer
+end
+
+-- Flags & State
+getgenv().smartAntiFlingEnabled = false
+local antiFlingEnabled = false
+local antiFlingDebug   = false
+
+local function isEnemy(player)
+    if player == localPlayer then return false end
+    local teams = game:GetService("Teams"):GetTeams()
+    if #teams > 1 then
+        if localPlayer.Team == nil or player.Team == nil then return true end
+        return localPlayer.Team ~= player.Team
+    end
+    return true
+end
+
+local function playSound(soundId)
+    local sound = Instance.new("Sound")
+    sound.SoundId = soundId
+    sound.Parent = workspace
+    local ok, err = pcall(function() sound:Play() end)
+    if not ok then
+        warn("Failed to play sound: " .. err)
+        sound:Destroy()
+        return
+    end
+    sound.Ended:Connect(function() sound:Destroy() end)
+end
+
+local uiLibrary
+local ok, err = pcall(function()
+    uiLibrary = loadstring(game:HttpGet(
+        "https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"
+    ))()
+end)
+if not ok or not uiLibrary then error("Failed to load UI library") end
+
+uiLibrary:SetTitle("Hitblox (v6.6 Final)")
+uiLibrary:SetIcon("http://www.roblox.com/asset/?id=91738788645337")
+uiLibrary:SetTheme("HighContrast")
+
+-- Config
+local hitboxSize = 10
+local hitboxEnabled = false
+local hitboxIncreaseButton, hitboxDecreaseButton
+
+-- Hitbox helpers
+local function applyHitbox(character)
+    if not character then return end
+    local player = Players:GetPlayerFromCharacter(character)
+    if player and player == localPlayer then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid and humanoid.Health <= 0 then return end
+    local isR15 = humanoid and humanoid.RigType == Enum.HumanoidRigType.R15
+
+    local function expandPart(part)
+        if not part then return end
+        if not part:FindFirstChild("OriginalSize") then
+            local v = Instance.new("Vector3Value")
+            v.Name = "OriginalSize"
+            v.Value = part.Size
+            v.Parent = part
+        end
+        part.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+        part.Transparency = 1
+        part.CanCollide = false
+    end
+
+    expandPart(character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso"))
+    if isR15 then expandPart(character:FindFirstChild("LowerTorso")) end
+
+    local head = character:FindFirstChild("Head")
+    if head then expandPart(head) ; head.Massless = true end
+
+    if isR15 then
+        for _, name in ipairs({"UpperTorso","LowerTorso","LeftUpperArm","RightUpperArm","LeftUpperLeg","RightUpperLeg"}) do
+            expandPart(character:FindFirstChild(name))
+        end
+    end
+end
+
+local function resetHitbox(character)
+    if not character then return end
+    local player = Players:GetPlayerFromCharacter(character)
+    if player and player == localPlayer then return end
+    local function restorePart(part)
+        if not part then return end
+        local orig = part:FindFirstChild("OriginalSize")
+        if orig then
+            part.Size = orig.Value
+            part.Transparency = 1
+            part.CanCollide = true
+        end
+    end
+    restorePart(character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso"))
+    local head = character:FindFirstChild("Head")
+    if head then restorePart(head) ; head.Massless = false end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid and humanoid.RigType == Enum.HumanoidRigType.R15 then
+        for _, name in ipairs({"LowerTorso","UpperTorso","LeftUpperArm","RightUpperArm","LeftUpperLeg","RightUpperLeg"}) do
+            restorePart(character:FindFirstChild(name))
+        end
+    end
+end
+
+local function applyHitboxesToAllPlayers()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if isEnemy(p) and p.Character then applyHitbox(p.Character) end
+    end
+end
+
+local function resetHitboxesOnAllPlayers()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then resetHitbox(p.Character) end
+    end
+end
+
+local hitboxLoopActive = false
+local function toggleHitboxes(enabled)
+    hitboxEnabled = enabled
+    playSound("rbxassetid://12221976")
+    pcall(function()
+        if hitboxIncreaseButton and hitboxDecreaseButton then
+            hitboxIncreaseButton.Visible = enabled
+            hitboxDecreaseButton.Visible = enabled
+        end
+    end)
+    if enabled then
+        applyHitboxesToAllPlayers()
+        if not hitboxLoopActive then
+            hitboxLoopActive = true
+            task.spawn(function()
+                while hitboxEnabled do
+                    task.wait(0.5)
+                    if hitboxEnabled then applyHitboxesToAllPlayers() end
+                end
+                hitboxLoopActive = false
+            end)
+        end
+    else
+        resetHitboxesOnAllPlayers()
+    end
+end
+
+local function wireHealthChanged(player, character)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    humanoid.HealthChanged:Connect(function()
+        if not hitboxEnabled then return end
+        if humanoid.Health > 0 then applyHitbox(character) else resetHitbox(character) end
+    end)
+    if hitboxEnabled and humanoid.Health > 0 then applyHitbox(character) end
+end
+
+local function trackPlayer(player)
+    if not player or not isEnemy(player) then return end
+    player.CharacterAdded:Connect(function(character)
+        task.wait(1)
+        wireHealthChanged(player, character)
+    end)
+    if player.Character then
+        wireHealthChanged(player, player.Character)
+    end
+end
+
+for _, p in ipairs(Players:GetPlayers()) do trackPlayer(p) end
+Players.PlayerAdded:Connect(trackPlayer)
+
+-- UI Buttons
+hitboxIncreaseButton = uiLibrary:AddButton("(Hitbox +)", function()
+    hitboxSize = math.clamp(hitboxSize + 5, 1, 50)
+    if hitboxEnabled then applyHitboxesToAllPlayers() end
+end)
+hitboxDecreaseButton = uiLibrary:AddButton("(Hitbox -)", function()
+    hitboxSize = math.clamp(hitboxSize - 5, 1, 50)
+    if hitboxEnabled then applyHitboxesToAllPlayers() end
+end)
+
+uiLibrary:AddToggle("Expand Hitbox", toggleHitboxes, false)
+
+-- ═══════════ SMART ANTI-FLING v7 (NATURAL BUG SIMULATOR) ═══════════
+local af_fallCount    = 0
+local af_maxFalls     = math.random(2, 5) -- Falls naturally 2 to 5 times now
+local af_isImmune     = false
+local af_immuneStart  = 0
+local af_immuneDur    = 3.0 + math.random() * 3.0 -- Random duration: 3 to 6 seconds
+local af_lastFling    = 0
+local af_safePos      = nil
+local af_currentHum   = nil
+
+local function af_reset(hum, reason)
+    af_isImmune    = false
+    af_fallCount   = 0
+    af_maxFalls    = math.random(2, 5)
+    af_immuneDur   = 3.0 + math.random() * 3.0
+    af_safePos     = nil
+    if antiFlingDebug and reason then print("[AntiFling] reset — "..reason) end
+end
+
+RunService.Stepped:Connect(function()
+    if not antiFlingEnabled then
+        if af_isImmune or af_fallCount > 0 then
+            local char = localPlayer.Character
+            local hum  = char and char:FindFirstChildOfClass("Humanoid")
+            af_reset(hum, "toggle off")
+        end
+        af_currentHum = nil
+        return
+    end
+
+    local char = localPlayer.Character
+    local hrp  = char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("UpperTorso"))
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum or hum.Health <= 0 then return end
+
+    -- Respawn tracking
+    if hum ~= af_currentHum then
+        af_currentHum = hum
+        af_safePos    = hrp.Position
+        af_fallCount  = 0
+        af_maxFalls   = math.random(2, 5)
+        af_immuneDur  = 3.0 + math.random() * 3.0
+        af_isImmune   = false
+    end
+
+    local now   = tick()
+    local pos   = hrp.Position
+    local vel   = hrp.AssemblyLinearVelocity
+    local av    = hrp.AssemblyAngularVelocity
+    local state = hum:GetState()
+
+    -- ── Immunity Expiry (Erases the "bug" after a few seconds) ──
+    if af_isImmune and (now - af_immuneStart > af_immuneDur) then
+        af_reset(hum, "immunity expired naturally")
+        return
+    end
+
+    -- ── Detection: Are we getting flung/ragdolled? ──
+    local isRagdolled = (state == Enum.HumanoidStateType.Ragdoll 
+                      or state == Enum.HumanoidStateType.FallingDown 
+                      or state == Enum.HumanoidStateType.Physics 
+                      or hum.PlatformStand == true)
+    local isFlying = vel.Magnitude > 80
+
+    if not af_isImmune then
+        -- Normal mode: Let them fall naturally, but count the hits
+        if (isRagdolled or isFlying) and (now - af_lastFling > 1.5) then
+            af_lastFling = now
+            af_fallCount = af_fallCount + 1
+            
+            if antiFlingDebug then
+                print(string.format("[AntiFling] Natural Fall %d/%d", af_fallCount, af_maxFalls))
+            end
+
+            if af_fallCount >= af_maxFalls then
+                af_isImmune    = true
+                af_immuneStart = now
+                if antiFlingDebug then 
+                    print(string.format("[AntiFling] Bug Activated (Immune for %.1fs)", af_immuneDur)) 
+                end
+            end
+        end
+        return
+    end
+
+    -- ═══ IMMUNE MODE (Looks like the high-FPS bug) ═══
+    -- 1. Kill the tornado spin smoothly
+    if av.Magnitude > 2 then
+        hrp.AssemblyAngularVelocity = av * 0.5 -- Dampens spin, doesn't instantly zero it
+    end
+
+    -- 2. Stop the slide without teleporting backwards
+    local horizontalVel = Vector3.new(vel.X, 0, vel.Z)
+    if horizontalVel.Magnitude > 25 then
+        -- Apply friction, don't hard clamp
+        hrp.AssemblyLinearVelocity = Vector3.new(vel.X * 0.8, vel.Y, vel.Z * 0.8)
+    end
+
+    -- 3. The "Natural Get Up" logic
+    if isRagdolled then
+        if hum.FloorMaterial ~= Enum.Material.Air then
+            -- Grounded: Smoothly force them to stand up like a normal stun recovery
+            pcall(function()
+                hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+                hum.PlatformStand = false
+            end)
+        else
+            -- In the air: Prevent the "floating ragdoll" glitch
+            -- Force them to fall normally by pushing down slightly
+            hrp.AssemblyLinearVelocity = Vector3.new(vel.X * 0.9, math.min(vel.Y, -15), vel.Z * 0.9)
+            if hum.PlatformStand then
+                hum.PlatformStand = false -- Let gravity take over naturally
+            end
+        end
+    end
+
+    -- 4. Keep track of where they should be (don't teleport)
+    if not isRagdolled and not isFlying then
+        af_safePos = pos
+    end
+end)
+
+uiLibrary:AddToggle("Smart Anti-Fling (Cycle Mode)", function(enabled)
+    antiFlingEnabled = enabled
+    getgenv().smartAntiFlingEnabled = enabled
+    print("[AntiFling] "..(enabled and "ENABLED" or "DISABLED"))
+    if not enabled then
+        local char = localPlayer.Character
+        local hum  = char and char:FindFirstChildOfClass("Humanoid")
+        af_reset(hum, "toggle off")
+    end
+    playSound("rbxassetid://12221976")
+end, false)
+
+uiLibrary:AddToggle("Anti-Fling Debug (Console)", function(enabled)
+    antiFlingDebug = enabled
+    print("[AntiFling] debug "..(enabled and "ON" or "OFF"))
+end, false)
+
+-- Toggle button (UI Hide/Show)
+if CoreGui:FindFirstChild("HitbloxToggleGui") then
+    CoreGui.HitbloxToggleGui:Destroy()
+end
+
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "HitbloxToggleGui"
+toggleGui.ResetOnSpawn = false
+pcall(function() toggleGui.Parent = CoreGui end)
+if not toggleGui.Parent then
+    toggleGui.Parent = localPlayer:WaitForChild("PlayerGui")
+end
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "OpenButton"
+toggleBtn.Size = UDim2.new(0, 32, 0, 32)
+toggleBtn.Position = UDim2.new(0.02, 0, 0.45, 0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+toggleBtn.BackgroundTransparency = 0.5
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Text = "⚡"
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.TextTransparency = 0.2
+toggleBtn.TextSize = 15
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.Active = true
+toggleBtn.Draggable = true
+toggleBtn.Parent = toggleGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)
+corner.Parent = toggleBtn
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.Transparency = 0.4
+stroke.Thickness = 1
+stroke.Parent = toggleBtn
+
+local isMenuOpen = true
+toggleBtn.MouseButton1Click:Connect(function()
+    isMenuOpen = not isMenuOpen
+    playSound("rbxassetid://12221976")
+    local function setVisible(guiRoot)
+        for _, gui in ipairs(guiRoot:GetChildren()) do
+            if gui ~= toggleGui and gui:IsA("ScreenGui") then
+                for _, child in ipairs(gui:GetChildren()) do
+                    if child:IsA("Frame") then child.Visible = isMenuOpen end
+                end
+            end
+        end
+    end
+    setVisible(CoreGui)
+    local pg = localPlayer:FindFirstChild("PlayerGui")
+    if pg then setVisible(pg) end
+end)
