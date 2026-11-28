@@ -1,4 +1,4 @@
--- ═══════════ UNDOCALL'S HUB v77 — NO MERCY ═══════════
+-- ═══════════ UNDOCALL'S HUB v7 — NO MERCY ═══════════
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ContextActionService = game:GetService("ContextActionService")
 
 local lp = Players.LocalPlayer
 while not lp do task.wait() lp = Players.LocalPlayer end
@@ -78,24 +79,6 @@ local function findRemotes()
 end
 findRemotes()
 
--- ═══════════ TRUE GOD MODE (ANTI-ONE SHOT) ═══════════
-pcall(function()
-    local mt = getrawmetatable(game)
-    local oldNewIndex = mt.__newindex
-    setreadonly(mt, false)
-    mt.__newindex = newcclosure(function(t, k, v)
-        if k == "Health" and t:IsA("Humanoid") and t.Parent == lp.Character then
-            if v < t.Health then
-                -- Block the health drop and instantly fire spawner
-                if SpawnerRE then task.spawn(function() SpawnerRE:FireServer() end) end
-                return
-            end
-        end
-        return oldNewIndex(t, k, v)
-    end)
-    setreadonly(mt, true)
-end)
-
 -- ═══════════ KEY SYSTEM ═══════════
 local KEY_LINK = "https://discord.gg/AUqu8YvHRw"
 local VALID_KEYS = { "K7xP9mQ2vR8nT4wL" }
@@ -110,7 +93,7 @@ local function checkKey(input)
 end
 
 pcall(function()
-    if isfile(KEY_FILE) then
+    if type(isfile) == "function" and isfile(KEY_FILE) then
         local savedKey = readfile(KEY_FILE)
         if savedKey and checkKey(savedKey) then keyVerified = true end
     end
@@ -597,18 +580,9 @@ hIcon.Image = "rbxassetid://78841768689548"
 hIcon.ScaleType = Enum.ScaleType.Fit
 hIcon.Parent = header
 
--- SECOND ICON ADDED HERE
-local hIcon2 = Instance.new("ImageLabel")
-hIcon2.Size = UDim2.new(0, 36, 0, 36)
-hIcon2.Position = UDim2.new(0, 48, 0.5, -18)
-hIcon2.BackgroundTransparency = 1
-hIcon2.Image = "rbxassetid://119119802324337"
-hIcon2.ScaleType = Enum.ScaleType.Fit
-hIcon2.Parent = header
-
 local hTitle = Instance.new("TextLabel")
-hTitle.Size = UDim2.new(0, 180, 0, 20)
-hTitle.Position = UDim2.new(0, 90, 0, 8) -- Shifted right to fit second icon
+hTitle.Size = UDim2.new(0, 220, 0, 20)
+hTitle.Position = UDim2.new(0, 50, 0, 8)
 hTitle.BackgroundTransparency = 0.99
 hTitle.Text = "UNDOCALL'S HUB"
 hTitle.TextColor3 = COL.text
@@ -618,8 +592,8 @@ hTitle.TextXAlignment = Enum.TextXAlignment.Left
 hTitle.Parent = header
 
 local hVersion = Instance.new("TextLabel")
-hVersion.Size = UDim2.new(0, 100, 0, 14)
-hVersion.Position = UDim2.new(0, 90, 0, 28) -- Shifted right to fit second icon
+hVersion.Size = UDim2.new(0, 80, 0, 14)
+hVersion.Position = UDim2.new(0, 50, 0, 28)
 hVersion.BackgroundTransparency = 1
 hVersion.Text = "v7  NO MERCY"
 hVersion.TextColor3 = COL.accentLight
@@ -1142,19 +1116,407 @@ local miscPage = addPage("Misc")
 addButtonRow(miscPage, "AntiLag (Potato Mode)", function() applyPotatoGraphics() end)
 addButtonRow(miscPage, "AntiKick", function()
     notify("AntiKick", "Shield active — blocking false kicks", 5)
-    pcall(function()
-        if type(loadstring) == "function" and type(game.HttpGet) == "function" then
-            local code = game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol")
-            if code and type(code) == "string" and not code:find("404: Not Found") then
-                local chunk = loadstring(code, "AntiKick")
-                if chunk then pcall(chunk) end
-            end
-        end
-    end)
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/OBFhm5650lol/AntickLol/refs/heads/main/Anticklol"))()
 end)
 
--- ═══════════ SURPRISE PAGE ═══════════
+-- ═══════════ SURPRISE PAGE (Includes Snowland) ═══════════
 local surprisePage = addPage("Surprise")
+
+-- ── SNOWLAND INTEGRATION ──
+local rProgress = ReplicatedStorage:FindFirstChild("RiderProgress")
+local snowlandRunning = false
+local snowStatusLbl
+
+if rProgress then
+    snowStatusLbl = Instance.new("TextLabel")
+    snowStatusLbl.Size = UDim2.new(1, 0, 0, 20); snowStatusLbl.BackgroundTransparency = 1; snowStatusLbl.Text = ""
+    snowStatusLbl.TextColor3 = COL.textDim; snowStatusLbl.Font = Enum.Font.Gotham; snowStatusLbl.TextSize = 12
+    snowStatusLbl.TextWrapped = true; snowStatusLbl.Visible = false; snowStatusLbl.Parent = surprisePage
+    
+    local function snowSetStatus(txt) 
+        if snowStatusLbl then
+            snowStatusLbl.Text = ">> " .. txt 
+            snowStatusLbl.Visible = true
+        end
+    end
+
+    local TRICKS_GOAL = 100000
+    pcall(function()
+        local cfg = require(ReplicatedStorage:WaitForChild("ChallengeConfig", 5))
+        if type(cfg.Tricks.Goal) == "number" then TRICKS_GOAL = cfg.Tricks.Goal end
+    end)
+
+    local RAY_UP = 30
+    local RAY_LEN = 120
+    local HOVER = 4
+    local LINE_SLACK = 3
+    local RUN_SPEED = 160
+    local RUN_DEADLINE = 400
+    local TRICKS_SPEED = 120
+    local RUN_DEADLINE_TRICKS = 900
+    local JUMP_VY = 90
+    local JUMP_EVERY = 1.5
+    local AIR_CLEARANCE = 3
+    local SPAM_TRICKS = { "flip", "spin" }
+    local SPAM_HOLD = 0.06
+    local SPAM_INTERVAL = 0.04
+    local START_MIN_AIR = 0.5
+    local RELEASE_MARGIN = 0.25
+    local KEY_OVERRIDE = {}
+
+    local nodes = {
+        Vector3.new(0, 2000, 0), Vector3.new(417.84, 1699.63, 1164.8), Vector3.new(1003, 1512.44, 1032.24),
+        Vector3.new(1698.53, 1347.99, 1398.42), Vector3.new(2308.09, 1223.81, 1781.63), Vector3.new(2917.64, 1106.19, 2164.83),
+        Vector3.new(2957.01, 987.53, 2619.03), Vector3.new(2388.44, 781.55, 3060.76), Vector3.new(2018.95, 506.57, 3776.62),
+        Vector3.new(2048.72, 245.19, 4375.88), Vector3.new(1833.71, 38.97, 4803.8), Vector3.new(1234.14, -65.21, 4781.23),
+        Vector3.new(554.62, -257.86, 4755.64), Vector3.new(-44.98, -356.48, 4734.86), Vector3.new(-112.84, -426.46, 5002.95),
+        Vector3.new(186.09, -559.5, 5568.85), Vector3.new(485.01, -680.92, 6134.75), Vector3.new(783.92, -871.26, 6700.66),
+        Vector3.new(509.73, -1003.6, 7009.43), Vector3.new(90.89, -1150.57, 7144.26), Vector3.new(-251.79, -1388.8, 7254.57),
+        Vector3.new(-525.79, -1516.68, 7735.64), Vector3.new(-694.26, -1647.69, 8517.71), Vector3.new(-557.2, -1757.11, 8969.43),
+        Vector3.new(-197.46, -1836.5, 8982.98), Vector3.new(282.2, -1953.6, 9001.04), Vector3.new(761.86, -2123.22, 9019.1),
+        Vector3.new(1241.52, -2339.84, 9037.15), Vector3.new(1841.1, -2626.35, 9059.73), Vector3.new(2440.67, -2710.91, 9082.3),
+        Vector3.new(3040.25, -2828.92, 9104.87), Vector3.new(3639.82, -2955.09, 9127.41), Vector3.new(3830.87, -3035.4, 8854.31),
+        Vector3.new(3874.07, -3157.71, 8378.65), Vector3.new(4133.61, -3240.52, 8134.04), Vector3.new(4512.65, -3391.14, 7839.56),
+        Vector3.new(4891.7, -3467.16, 7545.07), Vector3.new(5287.69, -3550.38, 7289.14), Vector3.new(5612.77, -3683.39, 7913.6),
+        Vector3.new(5997.43, -3783.5, 8238.18), Vector3.new(6424.51, -3939.26, 8457.26), Vector3.new(6851.6, -4101.43, 8676.34),
+        Vector3.new(7287.57, -4189.13, 8860.23), Vector3.new(7401.99, -4305.66, 8497.25), Vector3.new(7441.85, -4401.96, 8179.74),
+        Vector3.new(7481.71, -4612.6, 7862.23), Vector3.new(7534.5, -4717.7, 7547.27), Vector3.new(7737.15, -4786.15, 7303.94),
+        Vector3.new(8030.44, -4925.66, 7031.94), Vector3.new(8323.72, -5009.88, 6759.94), Vector3.new(8617, -5087.63, 6487.93),
+        Vector3.new(8910.29, -5163.23, 6215.93), Vector3.new(9203.57, -5226.58, 5943.93), Vector3.new(9498.11, -5293.53, 5673.36),
+        Vector3.new(9829.99, -5377.16, 5861.43), Vector3.new(10124.48, -5456.96, 6240.48), Vector3.new(10418.96, -5623.39, 6619.53),
+        Vector3.new(10556.07, -5698.43, 6959.36), Vector3.new(10421.79, -5729.51, 7044.75), Vector3.new(10209.58, -5767.91, 7156.85),
+        Vector3.new(9997.36, -5805.92, 7268.94), Vector3.new(9785.15, -5843.93, 7381.04), Vector3.new(9502.2, -5927.55, 7530.5),
+        Vector3.new(9219.25, -6065.16, 7679.96), Vector3.new(8865.56, -6231.33, 7866.79), Vector3.new(8516.6, -6412.94, 8061.43),
+        Vector3.new(8377.56, -6489.19, 8384.43), Vector3.new(8327.02, -6535.84, 8619.05), Vector3.new(8276.48, -6582.5, 8853.67),
+        Vector3.new(8225.94, -6627.07, 9088.28), Vector3.new(8175.41, -6669.39, 9322.9), Vector3.new(8124.87, -6758.09, 9557.52),
+        Vector3.new(7993.42, -6786.84, 9692.88), Vector3.new(7942.88, -6853.38, 9927.5), Vector3.new(7892.34, -6979.9, 10162.11),
+        Vector3.new(7841.8, -7069.84, 10396.73), Vector3.new(7791.26, -7173.49, 10631.35), Vector3.new(7740.73, -7255.9, 10865.97),
+        Vector3.new(7690.19, -7430.1, 11100.59), Vector3.new(7639.65, -7455.16, 11335.21), Vector3.new(7605.96, -7466.35, 11491.62)
+    }
+
+    local function lineHeight(a, b, p)
+        local ab = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
+        local len2 = ab:Dot(ab)
+        if len2 < 1e-6 then return b.Y end
+        local t = math.clamp(Vector3.new(p.X - a.X, 0, p.Z - a.Z):Dot(ab) / len2, 0, 1)
+        return a.Y + (b.Y - a.Y) * t
+    end
+
+    local function timeToFloor(h, vy, g)
+        if g <= 0 then return 0 end
+        local disc = vy * vy + 2 * g * math.max(h, 0)
+        return math.max(0, (vy + math.sqrt(disc)) / g)
+    end
+
+    local function snowGetChar()
+        local c = lp.Character
+        return c, c and c:FindFirstChild("HumanoidRootPart"), c and c:FindFirstChildOfClass("Humanoid")
+    end
+
+    local function waitUntil(pred, timeout)
+        local deadline = tick() + (timeout or 20)
+        while tick() < deadline do
+            if pred() then return true end
+            task.wait(0.2)
+        end
+        return false
+    end
+
+    local function findPad(name)
+        local ok, pads = pcall(function() return workspace.Course.Areas.StartHut.ChallengePads end)
+        if not ok or not pads then return nil, "ChallengePads not found" end
+        for _, pad in pads:GetChildren() do
+            if pad:GetAttribute("Challenge") == name then return pad end
+        end
+        return nil, 'no pad with Challenge == "' .. name .. '"'
+    end
+
+    local function matchesTrick(s, trick)
+        s = s:lower()
+        return s == trick or s:find(trick, 1, true) ~= nil
+    end
+
+    local function resolveTrickKeys()
+        local keys, via = {}, {}
+        local okB, bound = pcall(function() return ContextActionService:GetAllBoundActionInfo() end)
+        if not (okB and type(bound) == "table") then bound = nil end
+        local names = {}
+        if bound then
+            for action in pairs(bound) do table.insert(names, action) end
+            table.sort(names)
+        end
+        for _, trick in ipairs(SPAM_TRICKS) do
+            via[trick] = "no binding"
+            if KEY_OVERRIDE[trick] then
+                keys[trick], via[trick] = KEY_OVERRIDE[trick], "override"
+            elseif bound then
+                local best
+                for _, action in ipairs(names) do
+                    local a = action:lower()
+                    if a == trick then best = action break end
+                    if not best and matchesTrick(a, trick) then best = action end
+                end
+                if best then
+                    via[trick] = best .. " has no KeyCode"
+                    for _, it in ipairs(bound[best].inputTypes or {}) do
+                        if typeof(it) == "EnumItem" and it.EnumType == Enum.KeyCode then
+                            keys[trick], via[trick] = it, best
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        return keys, via
+    end
+
+    local function findScoreLabel()
+        local pg = lp:FindFirstChild("PlayerGui")
+        if not pg then return end
+        for _, d in ipairs(pg:GetDescendants()) do
+            if d.Name == "Total" and d:FindFirstChild("Title") then
+                local v = d:FindFirstChild("Value")
+                if v and v:IsA("TextLabel") then return v end
+            end
+        end
+    end
+
+    local function readScore(lbl)
+        local txt = lbl.Text:gsub("<[^>]->", "")
+        local cur = txt:match("^%s*([%d,]+)")
+        return cur and tonumber((cur:gsub(",", ""))) or nil
+    end
+
+    local VIM
+    do
+        local ok, v = pcall(game.GetService, game, "VirtualInputManager")
+        VIM = ok and v or nil
+    end
+
+    local function holdUntil(seconds, shouldStop)
+        local t0 = tick()
+        while tick() - t0 < seconds and not shouldStop() do
+            task.wait(0.02)
+        end
+    end
+
+    local function pressKey(key, hold, shouldStop)
+        local okD = pcall(function() VIM:SendKeyEvent(true, key, false, game) end)
+        holdUntil(hold, shouldStop)
+        local okU = pcall(function() VIM:SendKeyEvent(false, key, false, game) end)
+        return okD and okU
+    end
+
+    local function doChallenge(name)
+        if snowlandRunning then return end
+        snowlandRunning = true
+        local progressTarget = (name == "Tricks") and TRICKS_GOAL or 36800
+
+        for attempt = 1, 4 do
+            snowSetStatus(name .. " — attempt " .. attempt .. "/4")
+            local char, hrp, hum = snowGetChar()
+            if not (hrp and hum) then task.wait(3) continue end
+
+            local pad, why = findPad(name)
+            if not pad then
+                snowSetStatus(name .. " — " .. why)
+                task.wait(4)
+                continue
+            end
+            local padPos = pad:IsA("BasePart") and pad.Position or pad:GetPivot().Position
+            hrp.CFrame = CFrame.new(padPos + Vector3.new(0, 4, 0))
+            task.wait(3)
+
+            local started = waitUntil(function() return char:GetAttribute("InHut") ~= true end, 15)
+            if not started then task.wait(4) continue end
+
+            snowSetStatus(name .. " — racing! InHut=" .. tostring(char:GetAttribute("InHut")))
+            local idx = 1
+            local done = false
+            local died = false
+            local conns = {}
+            local startTime = tick()
+
+            conns[1] = RunService.Heartbeat:Connect(function()
+                if hum and hum.Parent then hum.Health = hum.MaxHealth end
+            end)
+            conns[2] = hum.Died:Connect(function() died = true end)
+
+            task.spawn(function()
+                while not done and not died do
+                    pcall(rProgress.FireServer, rProgress, math.clamp((idx - 1) / (#nodes - 1), 0, 1) * progressTarget)
+                    task.wait(0.5)
+                end
+            end)
+
+            local airborne, stunts, stuntVia, lastKick = false, 0, "-", 0
+            local airWindow, airLeft = 0, 0
+            local score = nil
+            local startPos = hrp.Position
+
+            if name == "Tricks" then
+                conns[3] = RunService.Heartbeat:Connect(function()
+                    if done or died or not hrp.Parent then return end
+                    hrp.AssemblyAngularVelocity = airborne and Vector3.new(0, 30, 0) or Vector3.zero
+                end)
+                task.spawn(function()
+                    local keys, via = resolveTrickKeys()
+                    local summary = {}
+                    for _, tn in ipairs(SPAM_TRICKS) do
+                        table.insert(summary, tn .. "=" .. (keys[tn] and keys[tn].Name or ("none: " .. via[tn])))
+                    end
+                    stuntVia = table.concat(summary, " ")
+                    local doneWindow, spamIdx = 0, 0
+                    local function stop() return done or died or airLeft < RELEASE_MARGIN end
+                    while not done and not died do
+                        if airborne and airWindow ~= doneWindow then
+                            doneWindow = airWindow
+                            while airborne and airLeft >= START_MIN_AIR and not (done or died) do
+                                spamIdx = spamIdx % #SPAM_TRICKS + 1
+                                local tn = SPAM_TRICKS[spamIdx]
+                                if keys[tn] then
+                                    local hold = math.min(SPAM_HOLD, math.max(airLeft - RELEASE_MARGIN, 0.05))
+                                    stuntVia = tn .. ":" .. (pressKey(keys[tn], hold, stop) and keys[tn].Name or "FAILED")
+                                    stunts = stunts + 1
+                                end
+                                task.wait(SPAM_INTERVAL)
+                            end
+                        end
+                        task.wait(0.03)
+                    end
+                end)
+                task.spawn(function()
+                    local lbl = findScoreLabel()
+                    while not done and not died do
+                        if lbl and lbl.Parent then
+                            local v = readScore(lbl)
+                            if v then score = v end
+                        else
+                            lbl = findScoreLabel()
+                        end
+                        task.wait(0.25)
+                    end
+                end)
+            end
+
+            local rayParams = RaycastParams.new()
+            rayParams.FilterType = Enum.RaycastFilterType.Exclude
+            rayParams.FilterDescendantsInstances = {char}
+            rayParams.CollisionGroup = hrp.CollisionGroup
+            local rayHit = false
+
+            conns[4] = RunService.Stepped:Connect(function()
+                if done or died or not hrp or not hrp.Parent then return end
+                if idx > #nodes then done = true return end
+
+                local target = nodes[idx]
+                local diff = target - hrp.Position
+                local flat = Vector3.new(diff.X, 0, diff.Z)
+
+                if flat.Magnitude < 30 then
+                    idx = idx + 1
+                    return
+                end
+
+                local dir = flat.Unit
+                local speed = (name == "Tricks") and TRICKS_SPEED or RUN_SPEED
+                hrp.AssemblyLinearVelocity = dir * speed + Vector3.new(0, hrp.AssemblyLinearVelocity.Y, 0)
+
+                if not (name == "Tricks" and airborne) then
+                    hrp.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + dir)
+                end
+
+                local p = hrp.Position
+                local ray = workspace:Raycast(p + Vector3.new(0, RAY_UP, 0), Vector3.new(0, -RAY_LEN, 0), rayParams)
+                rayHit = ray ~= nil
+                local floorY, slack
+                if ray then
+                    floorY, slack = ray.Position.Y + HOVER, 0
+                else
+                    floorY, slack = lineHeight(idx > 1 and nodes[idx - 1] or startPos, target, p), LINE_SLACK
+                end
+
+                if p.Y < floorY - slack then
+                    local v = hrp.AssemblyLinearVelocity
+                    hrp.CFrame = CFrame.new(p.X, floorY, p.Z) * (hrp.CFrame - hrp.CFrame.Position)
+                    hrp.AssemblyLinearVelocity = Vector3.new(v.X, 0, v.Z)
+                    p = hrp.Position
+                end
+                local wasAirborne = airborne
+                airborne = (p.Y - floorY) > AIR_CLEARANCE
+                if airborne and not wasAirborne then airWindow = airWindow + 1 end
+
+                if name == "Tricks" and not airborne and tick() - lastKick > JUMP_EVERY then
+                    lastKick = tick()
+                    local v = hrp.AssemblyLinearVelocity
+                    hrp.AssemblyLinearVelocity = Vector3.new(v.X, JUMP_VY, v.Z)
+                end
+                airLeft = airborne and timeToFloor(p.Y - floorY, hrp.AssemblyLinearVelocity.Y, workspace.Gravity) or 0
+            end)
+
+            local deadline = startTime + ((name == "Tricks") and RUN_DEADLINE_TRICKS or RUN_DEADLINE)
+            while not done and not died do
+                if not hrp.Parent or tick() > deadline then died = true end
+                if hrp.Parent then
+                    local line2
+                    if name == "Tricks" then
+                        line2 = string.format("a=%s p=%d sc=%s/%d %s", airborne and "Y" or "n", stunts, score and tostring(score) or "?", TRICKS_GOAL, stuntVia)
+                    else
+                        local long = "-"
+                        if not rayHit then
+                            local r = workspace:Raycast(hrp.Position + Vector3.new(0, RAY_UP, 0), Vector3.new(0, -1000, 0), rayParams)
+                            long = r and (r.Instance.Name .. "@" .. math.floor(hrp.Position.Y + RAY_UP - r.Position.Y)) or "none"
+                        end
+                        line2 = string.format("grp=%s vy=%.0f long=%s", hrp.CollisionGroup, hrp.AssemblyLinearVelocity.Y, long)
+                    end
+                    snowSetStatus(string.format("%s n%d/%d y=%.0f ray=%s\n%s", name, idx, #nodes, hrp.Position.Y, rayHit and "hit" or "MISS", line2))
+                end
+                task.wait(0.5)
+            end
+
+            for _, c in conns do if c then pcall(c.Disconnect, c) end end
+
+            if done then
+                local elapsed = tick() - startTime
+                snowSetStatus(name .. " COMPLETE! Time: " .. math.floor(elapsed) .. "s")
+                notify("Snowland", name .. " done!")
+                task.wait(2)
+
+                local runFinished = ReplicatedStorage:FindFirstChild("RunFinished")
+                if runFinished then
+                    for i = 1, 5 do
+                        pcall(function() runFinished:FireServer(math.floor(elapsed), 1, progressTarget, nil) end)
+                        task.wait(0.2)
+                    end
+                else
+                    snowSetStatus(name .. " — RunFinished not found")
+                end
+
+                task.wait(10)
+                break
+            else
+                snowSetStatus(name .. " — died/timeout, retrying")
+                task.wait(5)
+            end
+        end
+        snowlandRunning = false
+        snowSetStatus("ready")
+    end
+
+    addButtonRow(surprisePage, "☠ SNOWLAND: TIME", function() doChallenge("Time") end)
+    addButtonRow(surprisePage, "☠ SNOWLAND: TRICKS", function() doChallenge("Tricks") end)
+    addButtonRow(surprisePage, "☠ SNOWLAND: MINO", function() doChallenge("Mino") end)
+    addButtonRow(surprisePage, "☠ SNOWLAND: RUN ALL", function()
+        if snowlandRunning then return end
+        task.spawn(function()
+            for _, ch in ipairs({ "Time", "Mino", "Tricks" }) do doChallenge(ch) end
+            notify("DONE", "All 3 cleared!")
+        end)
+    end)
+else
+    addButtonRow(surprisePage, "Snowland (Not Detected)", function() notify("Snowland", "You are not in Snowland!", 3) end)
+end
+-- ── END SNOWLAND INTEGRATION ──
 
 local claimBtn = Instance.new("TextButton")
 claimBtn.Size = UDim2.new(1, 0, 0, 40); claimBtn.BackgroundColor3 = COL.accentDark; claimBtn.BackgroundTransparency = 0.05
@@ -1214,6 +1576,7 @@ claimBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+-- Mutation hook
 pcall(function()
     local mt = getrawmetatable(game)
     local oldNamecall = mt.__namecall
@@ -1481,6 +1844,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if plr then toggleWhitelistPlayer(plr) end
 end)
 
+-- ═══════════ PAGE ORDER ═══════════
 local PAGE_ORDER = { Key=1, Bonus=2, Misc=3, Main=4, Combat=5, Movement=6, Surprise=7 }
 for name, data in pairs(sideBtns) do
     data.btn.LayoutOrder = PAGE_ORDER[name] or 99
@@ -1832,268 +2196,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ═══════════ GLOBAL KILL AURA LOOP ═══════════
-local nextAuraFire = tick() + 0.1
-
-RunService.Heartbeat:Connect(function()
-    if not killAuraOn or not keyVerified then return end
-    local now = tick()
-    if now < nextAuraFire then return end
-    
-    local myChar = lp.Character
-    if not myChar then return end
-    
-    local hitAny = false
-    for _, p in ipairs(Players:GetPlayers()) do
-        -- Global: distance is ignored
-        if p ~= lp and not isWhitelisted(p) and p.Character then
-            local root = p.Character:FindFirstChild("HumanoidRootPart")
-            local eHum = p.Character:FindFirstChildOfClass("Humanoid")
-            if root and eHum and eHum.Health > 0 then
-                local cf = root.CFrame
-                
-                -- Use BadgeRE (bypasses FlingRE cooldown)
-                if BadgeRE then pcall(function() BadgeRE:FireServer({ HitChars={p.Character}, HITBOX_CFRAME=cf }) end) end
-                if HitFXRE then pcall(function() HitFXRE:FireServer(root.Position) end) end
-                if FlingRE then pcall(function() FlingRE:FireServer(p) end) end
-                hitAny = true
-            end
-        end
-    end
-    
-    nextAuraFire = now + (hitAny and (0.08 + math.random() * 0.07) or 0.2)
-end)
-
--- ═══════════ SURPRISE LOOP ═══════════
-local function engage(myRoot, tRoot)
-    if not (myRoot and tRoot) then return end
-    local behind = tRoot.CFrame.LookVector * -3.5
-    local standPos = tRoot.Position + behind + Vector3.new(0, 3, 0)
-    myRoot.CFrame = CFrame.lookAt(standPos, tRoot.Position)
-end
-
-local function fireSurpriseHit(cfg, tChar, tRoot)
-    if not (tChar and tRoot) then return end
-    local pos, cf = tRoot.Position, tRoot.CFrame
-    if BadgeRE then pcall(function() BadgeRE:FireServer({ HitChars={tChar}, HITBOX_CFRAME=cf }) end) end
-    if FXRE and cfg and cfg.fxAction then pcall(function() FXRE:FireServer({ EndPoint=pos, action=cfg.fxAction, Origin=pos }) end) end
-    if HitFXRE then pcall(function() HitFXRE:FireServer(pos) end) end
-end
-
-local function maintainGodMode(force)
-    if not SpawnerRE then return end
-    local elapsed = tick() - spawnerState.lastFire
-    if force or elapsed >= spawnerState.nextWait then
-        pcall(function() SpawnerRE:FireServer() end)
-        spawnerState.lastFire = tick()
-        spawnerState.nextWait = avRnd(AV.SPAWNER_MIN, AV.SPAWNER_MAX)
-    end
-end
-
-local surpriseToken = 0
-
-local function runSurpriseIteration(token, myRoot, myHum)
-    local tChar = ghostTarget and ghostTarget.Character
-    local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-    local tHum  = tChar and tChar:FindFirstChildOfClass("Humanoid")
-    if not (tRoot and tHum and tHum.Health > 0) then
-        if isWhitelisted(ghostTarget) then ghostTarget=nil; victimLocked=false end
-        avJitter(AV.DEAD_POLL_MIN, AV.DEAD_POLL_MAX); return
-    end
-    engage(myRoot, tRoot); avJitter(AV.REPOSITION_MIN, AV.REPOSITION_MAX)
-    local hits = math.random(AV.HITS_MIN, AV.HITS_MAX)
-    for i = 1, hits do
-        if not (surpriseOn and token == surpriseToken) then break end
-        if isWhitelisted(ghostTarget) then ghostTarget=nil; victimLocked=false; break end
-        tChar = ghostTarget and ghostTarget.Character
-        tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-        if not (tRoot and tChar) then break end
-        
-        -- Removed distance limit, always hits
-        engage(myRoot, tRoot); avJitter(AV.REPOSITION_MIN, AV.REPOSITION_MAX)
-        tChar = ghostTarget and ghostTarget.Character
-        tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-        if not tRoot then break end
-        
-        myRoot.CFrame = CFrame.lookAt(myRoot.Position, tRoot.Position)
-        fireSurpriseHit(nil, tChar, tRoot)
-        if FlingRE then pcall(function() FlingRE:FireServer(ghostTarget) end) end
-        if i < hits then avJitter(AV.HIT_GAP_MIN, AV.HIT_GAP_MAX) end
-    end
-    maintainGodMode(false); avJitter(AV.CYCLE_YIELD_MIN, AV.CYCLE_YIELD_MAX)
-end
-
-local function startSurpriseLoop()
-    surpriseToken += 1
-    local token = surpriseToken
-    spawnerState.lastFire = 0; spawnerState.nextWait = 0
-    task.spawn(function()
-        while surpriseOn and token == surpriseToken do
-            if not FlingRE then findRemotes() end
-            local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-            local myHum  = myChar and myChar:FindFirstChildOfClass("Humanoid")
-            if not (myRoot and myHum) then avJitter(AV.DEAD_POLL_MIN, AV.DEAD_POLL_MAX); continue end
-            runSurpriseIteration(token, myRoot, myHum)
-        end
-    end)
-end
-
--- ═══════════ NO MERCY & AUTO-VICTIM LOOP ═══════════
-RunService.Heartbeat:Connect(function()
-    if noMercyTargetOn and keyVerified then
-        if noMercyTargetPlayer and noMercyTargetPlayer.Character then
-            local tChar = noMercyTargetPlayer.Character
-            local tHum = tChar:FindFirstChildOfClass("Humanoid")
-            if tHum and tHum.Health > 0 and not isWhitelisted(noMercyTargetPlayer) then
-                if ghostTarget ~= noMercyTargetPlayer then
-                    ghostTarget = noMercyTargetPlayer
-                    victimLocked = true
-                    updateAvPanelVictim(noMercyTargetPlayer.Name)
-                end
-                if not surpriseOn then
-                    surpriseOn = true
-                    startSurpriseLoop()
-                end
-            else
-                ghostTarget = nil
-                surpriseOn = false
-                victimLocked = false
-            end
-        else
-            ghostTarget = nil
-            surpriseOn = false
-            victimLocked = false
-        end
-        return
-    end
-
-    local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return end
-    local now = tick()
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= lp and p.Character and not isWhitelisted(p) then
-            local r = p.Character:FindFirstChild("HumanoidRootPart")
-            local h = p.Character:FindFirstChildOfClass("Humanoid")
-            if r and h and h.Health > 0 then
-                -- GLOBAL tracking: records EVERYONE, no distance check
-                proximityHistory[p] = now
-            end
-        end
-    end
-    for p, t in pairs(proximityHistory) do
-        if now - t > AV.RECENT_NEAR_WINDOW * 2 then proximityHistory[p] = nil end
-    end
-end)
-
-local function resolveAttacker()
-    local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return nil end
-    local myPos = myRoot.Position
-
-    local closestEnemy = nil
-    local closestDist = math.huge -- GLOBAL targeting
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= lp and p.Character then
-            local r = p.Character:FindFirstChild("HumanoidRootPart")
-            local h = p.Character:FindFirstChildOfClass("Humanoid")
-            if r and h and h.Health > 0 then
-                local d = (myPos - r.Position).Magnitude
-                if d <= closestDist then
-                    if isWhitelisted(p) then
-                        -- If friend is hitting us, cancel retaliation
-                        return nil
-                    else
-                        closestEnemy = p
-                        closestDist = d
-                    end
-                end
-            end
-        end
-    end
-    return closestEnemy
-end
-
-local function lockAttacker(attacker)
-    ghostTarget = attacker; victimLocked = true; ATK.last = attacker; ATK.time = tick()
-    updateAvPanelVictim(attacker.Name)
-    if not surpriseOn then surpriseOn = true; startSurpriseLoop() end
-end
-
-RunService.Heartbeat:Connect(function()
-    if not autoVictim or not keyVerified or noMercyTargetOn then
-        if lp.Character then local h = lp.Character:FindFirstChildOfClass("Humanoid")
-            if h then lastHealth = h.Health end end; return
-    end
-    
-    local myChar = lp.Character; local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
-    if not myHum then return end
-    local cur = myHum.Health; local drop = lastHealth - cur
-    if drop >= AV.MIN_DAMAGE then
-        local hpPct = cur / math.max(myHum.MaxHealth, 1)
-        local lockedValid = false
-        if victimLocked and ghostTarget and ghostTarget.Character and not isWhitelisted(ghostTarget) then
-            local r = ghostTarget.Character:FindFirstChild("HumanoidRootPart")
-            local h = ghostTarget.Character:FindFirstChildOfClass("Humanoid")
-            if r and h and h.Health > 0 then lockedValid=true; ATK.last=ghostTarget; ATK.time=tick() end
-        end
-        if not lockedValid then
-            local attacker = resolveAttacker()
-            if attacker then 
-                lockAttacker(attacker) 
-            else
-                surpriseOn = false
-                ghostTarget = nil
-                victimLocked = false
-                updateAvPanelVictim(nil)
-            end
-        end
-    end
-    lastHealth = cur
-end)
-
-lp.CharacterAdded:Connect(function(char)
-    local hum = char:WaitForChild("Humanoid")
-    lastHealth = hum.MaxHealth; proximityHistory = {}
-end)
-
--- ═══════════ TARGET LOCK LOOP ═══════════
-RunService.Heartbeat:Connect(function()
-    if not targetLockOn or INV.enabled then return end
-    if not target then local found = Players:FindFirstChild(targetName); if found then target=found end end
-    if target and target.Character then
-        local tChar = target.Character; local tRoot = tChar:FindFirstChild("HumanoidRootPart")
-        local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        if tRoot and myRoot then myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 2, 3) end
-    end
-end)
-
--- ═══════════ SUPER POWER + HITBOX LOOP ═══════════
-RunService.Heartbeat:Connect(function()
-    local char = lp.Character; if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and getgenv().superPowerEnabled then hum.WalkSpeed=75; hum.JumpPower=100; hum.UseJumpPower=true end
-    if hitboxEnabled then
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= lp and not isWhitelisted(p) and p.Character then
-                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    if not hrp:FindFirstChild("OriginalSize") then
-                        local o = Instance.new("Vector3Value"); o.Name="OriginalSize"; o.Value=hrp.Size; o.Parent=hrp
-                    end
-                    hrp.Size = Vector3.new(hitboxSize,hitboxSize,hitboxSize); hrp.Transparency=hitboxTransparency; hrp.CanCollide=false
-                end
-            end
-        end
-    end
-end)
-
--- ═══════════ INFINITE JUMP ═══════════
-UserInputService.JumpRequest:Connect(function()
-    if getgenv().superPowerEnabled or getgenv().infiniteJumpEnabled then
-        local char = lp.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-    end
-end)
-
-print("Undocall's Hub v7 — No Mercy loaded.")
+-- ═══════════ KILL AURA LOOP ═══════════
+local AURA = { lastHit=0, minDelay=0.5, maxDelay=1.5, lastTarget=nil }
+local function getAuraDelay() return AURA.minDelay + math
