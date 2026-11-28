@@ -123,26 +123,26 @@ local noMercyTargetName = ""
 local noMercyTargetToggle
 
 local AV = {
-    COMBAT_RANGE       = 25,     -- Increased from 14 (snipes from further away)
-    HITS_MIN           = 4,      -- Increased from 2
-    HITS_MAX           = 7,      -- Increased from 3 (absolute barrage)
-    HIT_GAP_MIN        = 0.02,   -- Decreased from 0.12 (almost instant hits)
-    HIT_GAP_MAX        = 0.05,   -- Decreased from 0.22
-    CYCLE_YIELD_MIN    = 0.02,   -- Decreased from 0.15 (almost no downtime)
-    CYCLE_YIELD_MAX    = 0.05,   -- Decreased from 0.30
-    DEAD_POLL_MIN      = 0.01,   -- Switches to next target instantly
-    DEAD_POLL_MAX      = 0.02,
-    REPOSITION_MIN     = 0.01,   -- Snaps to target faster
-    REPOSITION_MAX     = 0.02,
+    COMBAT_RANGE       = 25,     
+    HITS_MIN           = 3,      
+    HITS_MAX           = 5,      
+    HIT_GAP_MIN        = 0.08,   
+    HIT_GAP_MAX        = 0.15,   
+    CYCLE_YIELD_MIN    = 0.08,   
+    CYCLE_YIELD_MAX    = 0.15,   
+    DEAD_POLL_MIN      = 0.02,   
+    DEAD_POLL_MAX      = 0.05,
+    REPOSITION_MIN     = 0.02,   
+    REPOSITION_MAX     = 0.05,
     NEAR_RADIUS        = 500,
     MIN_DAMAGE         = 1,
     ATTACKER_CACHE_TTL = 10,
     RECENT_NEAR_WINDOW = 5.0,
     RECENT_NEAR_DIST   = 100,
-    DEFENSIVE_HP_GATE  = 0.99,   -- Triggers god mode spawner instantly on any HP drop
-    SPAWNER_HP_TRIGGER = 0.99,
-    SPAWNER_MIN        = 0.05,   -- Spams SpawnerRemote (since you said it's safe)
-    SPAWNER_MAX        = 0.10,
+    DEFENSIVE_HP_GATE  = 0.50,   -- Only heal when HP < 50% (not 99%)
+    SPAWNER_HP_TRIGGER = 0.50,
+    SPAWNER_MIN        = 1.5,    -- Safe cooldown (1.5 seconds)
+    SPAWNER_MAX        = 2.5,
 }
 
 local ATK = { last=nil, time=0 }
@@ -1818,37 +1818,38 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- ═══════════ KILL AURA LOOP ═══════════
-local AURA = { lastHit=0, minDelay=0.1, maxDelay=0.3, lastTarget=nil }
-local function getAuraDelay() return AURA.minDelay + math.random() * (AURA.maxDelay - AURA.minDelay) end
-local nextAuraFire = tick() + getAuraDelay()
+local nextAuraFire = tick() + 0.1
 
 RunService.Heartbeat:Connect(function()
-    if not killAuraOn or not keyVerified or not FlingRE then return end
+    if not killAuraOn or not keyVerified then return end
     local now = tick()
     if now < nextAuraFire then return end
-    local myChar = lp.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    if not myRoot then nextAuraFire = now + getAuraDelay(); return end
-    local nearest, nearestDist = nil, auraRange
+    
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then nextAuraFire = now + 0.2 return end
+    
+    local hitAny = false
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= lp and not isWhitelisted(p) and p.Character then
             local root = p.Character:FindFirstChild("HumanoidRootPart")
             local eHum = p.Character:FindFirstChildOfClass("Humanoid")
             if root and eHum and eHum.Health > 0 then
                 local dist = (myRoot.Position - root.Position).Magnitude
-                if dist < nearestDist then nearest = p; nearestDist = dist end
+                if dist <= 25 then -- Extended range
+                    local cf = root.CFrame
+                    -- Bypass FlingRE cooldown by using BadgeRE for direct damage
+                    if BadgeRE then pcall(function() BadgeRE:FireServer({ HitChars={p.Character}, HITBOX_CFRAME=cf }) end) end
+                    if HitFXRE then pcall(function() HitFXRE:FireServer(root.Position) end) end
+                    if FlingRE then pcall(function() FlingRE:FireServer(p) end) end
+                    hitAny = true
+                end
             end
         end
     end
-    if nearest then
-        if nearest == AURA.lastTarget and math.random() > 0.5 then
-            nextAuraFire = now + 0.5
-        else
-            pcall(function() FlingRE:FireServer(nearest) end)
-            AURA.lastTarget = nearest; nextAuraFire = now + getAuraDelay()
-        end
-    else
-        nextAuraFire = now + getAuraDelay()
-    end
+    
+    -- Fast but not spammy enough to get kicked (8-15 hits per second)
+    nextAuraFire = now + (hitAny and (0.08 + math.random() * 0.07) or 0.2)
 end)
 
 -- ═══════════ SURPRISE LOOP ═══════════
